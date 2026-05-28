@@ -1,0 +1,152 @@
+<?php
+
+use App\Http\Controllers\PetugasController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AbsensiController;
+use App\Http\Controllers\LokasiController;
+use App\Models\Absensi;
+use App\Models\User;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| HOME
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', function () {
+
+    return redirect()->route('login');
+
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| DASHBOARD
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/dashboard', function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | SUPERVISOR
+        |--------------------------------------------------------------------------
+        */
+
+        if (auth()->user()->role == 'supervisor') {
+
+            return view('supervisor.dashboard', [
+
+                'totalPetugas' => User::where('role', 'petugas')->count(),
+
+                'absensiHariIni' => Absensi::whereDate(
+                    'tanggal',
+                    today()
+                )->count(),
+
+                'progressHariIni' => Absensi::whereDate(
+                    'tanggal',
+                    today()
+                )
+                ->where('status', 'progress')
+                ->count(),
+
+            ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PETUGAS
+        |--------------------------------------------------------------------------
+        */
+
+        return view('petugas.dashboard', [
+
+            'absensiHariIni' => Absensi::where(
+                'user_id',
+                auth()->id()
+            )
+            ->whereDate('tanggal', today())
+            ->latest()
+            ->first(),
+
+            'totalAbsensi' => Absensi::where(
+                'user_id',
+                auth()->id()
+            )->count(),
+
+            'progressCount' => Absensi::where(
+                'user_id',
+                auth()->id()
+            )
+            ->where('status', 'progress')
+            ->count(),
+
+        ]);
+
+    })->name('dashboard');
+
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| PROFILE
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function () {
+
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
+
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| SUPERVISOR ONLY
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:supervisor'])->group(function () {
+
+    Route::resource('petugas', PetugasController::class)
+        ->except(['show']);
+
+    Route::resource('lokasi', LokasiController::class);
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| ABSENSI
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->group(function () {
+
+    Route::get(
+        'absensi/download',
+        [AbsensiController::class, 'download']
+    )->name('absensi.download');
+
+    Route::resource(
+        'absensi',
+        AbsensiController::class
+    );
+
+});
+
+require __DIR__.'/auth.php';
