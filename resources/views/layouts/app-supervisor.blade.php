@@ -13,9 +13,15 @@
 
     <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/iconpln.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/iconpln.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/iconpln.png') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="K3L">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="K3L Monitoring">
+    <meta name="format-detection" content="telephone=no">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
@@ -29,6 +35,53 @@
                 const theme = stored || (prefersDark ? 'dark' : 'light');
                 if (theme === 'dark') document.documentElement.classList.add('dark');
             } catch (e) {}
+        })();
+    </script>
+
+    {{-- PWA: setup global state early so all components can read it --}}
+    <script>
+        (function() {
+            const ua = navigator.userAgent;
+            const isIOS = /iphone|ipad|ipod/i.test(ua) && !window.MSStream;
+            const isAndroid = /android/i.test(ua);
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+            window.pwa = {
+                isIOS,
+                isAndroid,
+                isInstalled: isStandalone,
+                canPrompt: false,
+                _deferredPrompt: null,
+
+                install() {
+                    if (this._deferredPrompt) {
+                        this._deferredPrompt.prompt();
+                        return this._deferredPrompt.userChoice.then(({ outcome }) => {
+                            this._deferredPrompt = null;
+                            this.canPrompt = false;
+                            window.dispatchEvent(new CustomEvent('pwa-state-changed'));
+                            return outcome === 'accepted';
+                        });
+                    }
+                    return Promise.resolve(false);
+                },
+            };
+
+            if (!isStandalone) {
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    window.pwa._deferredPrompt = e;
+                    window.pwa.canPrompt = true;
+                    window.dispatchEvent(new CustomEvent('pwa-state-changed'));
+                });
+
+                window.addEventListener('appinstalled', () => {
+                    window.pwa.isInstalled = true;
+                    window.pwa.canPrompt = false;
+                    window.pwa._deferredPrompt = null;
+                    window.dispatchEvent(new CustomEvent('pwa-state-changed'));
+                });
+            }
         })();
     </script>
 </head>
@@ -48,6 +101,8 @@
     </div>
 
     @include('layouts.partials.bottom-nav')
+
+    @include('layouts.partials.pwa')
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -103,10 +158,6 @@
                     window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: 'system' } }));
                 }
             });
-        }
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
         }
     </script>
 

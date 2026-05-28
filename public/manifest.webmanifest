@@ -1,25 +1,88 @@
 {
+    "id": "k3l-monitoring",
     "name": "K3L Monitoring",
     "short_name": "K3L",
-    "description": "Monitoring absensi, geofencing, dokumentasi, dan checklist APD petugas K3L.",
+    "description": "Sistem monitoring absensi geofencing, dokumentasi APD, dan kegiatan petugas K3L PT PLN.",
+    "lang": "id-ID",
+    "dir": "ltr",
     "start_url": "/dashboard",
     "scope": "/",
     "display": "standalone",
-    "background_color": "#f8fafc",
-    "theme_color": "#0891b2",
+    "display_override": [
+        "standalone",
+        "minimal-ui"
+    ],
     "orientation": "portrait-primary",
+    "background_color": "#0F172A",
+    "theme_color": "#0284C7",
+    "categories": [
+        "business",
+        "productivity",
+        "utilities"
+    ],
     "icons": [
         {
             "src": "/images/iconpln.png",
             "sizes": "192x192",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
         },
         {
             "src": "/images/iconpln.png",
             "sizes": "512x512",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
+        },
+        {
+            "src": "/images/iconpln.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/images/iconpln.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
-    ]
+    ],
+    "shortcuts": [
+        {
+            "name": "Input Absensi",
+            "short_name": "Absen",
+            "description": "Buat catatan absensi baru dengan geofencing",
+            "url": "/absensi/create",
+            "icons": [
+                {
+                    "src": "/images/iconpln.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Riwayat Absensi",
+            "short_name": "Riwayat",
+            "description": "Lihat riwayat kehadiran",
+            "url": "/absensi",
+            "icons": [
+                {
+                    "src": "/images/iconpln.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Dashboard",
+            "short_name": "Beranda",
+            "description": "Buka dashboard utama",
+            "url": "/dashboard",
+            "icons": [
+                {
+                    "src": "/images/iconpln.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ],
+    "prefer_related_applications": false
 }
