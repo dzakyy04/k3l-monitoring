@@ -1,39 +1,44 @@
 <x-guest-layout>
-    <div>
-        <p class="text-xs font-bold uppercase tracking-widest text-primary">Akun Baru</p>
-        <h1 class="mt-2 text-2xl font-extrabold tracking-tight text-base-content">Registrasi</h1>
-    </div>
+    <p class="eyebrow">Akun Baru</p>
+    <h1 class="mt-2 text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Registrasi</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Daftarkan akun baru untuk akses ke dashboard.</p>
 
     <form method="POST" action="{{ route('register') }}" class="mt-6 space-y-4">
         @csrf
 
-        <div class="form-control">
-            <label class="label" for="name"><span class="label-text font-bold">Nama</span></label>
-            <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" class="input input-bordered w-full" placeholder="Nama lengkap">
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+        <div>
+            <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Nama Lengkap</label>
+            <input type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name"
+                   class="mt-1 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring">
+            @error('name') <p class="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">{{ $message }}</p> @enderror
         </div>
 
-        <div class="form-control">
-            <label class="label" for="email"><span class="label-text font-bold">Email</span></label>
-            <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username" class="input input-bordered w-full" placeholder="nama@email.com">
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div>
+            <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Email</label>
+            <input type="email" name="email" value="{{ old('email') }}" required autocomplete="username"
+                   class="mt-1 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring">
+            @error('email') <p class="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">{{ $message }}</p> @enderror
         </div>
 
-        <div class="form-control">
-            <label class="label" for="password"><span class="label-text font-bold">Password</span></label>
-            <input id="password" type="password" name="password" required autocomplete="new-password" class="input input-bordered w-full" placeholder="Minimal 8 karakter">
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div>
+            <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Password</label>
+            <input type="password" name="password" required autocomplete="new-password"
+                   class="mt-1 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring">
+            @error('password') <p class="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">{{ $message }}</p> @enderror
         </div>
 
-        <div class="form-control">
-            <label class="label" for="password_confirmation"><span class="label-text font-bold">Konfirmasi Password</span></label>
-            <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password" class="input input-bordered w-full" placeholder="Ulangi password">
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        <div>
+            <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Konfirmasi Password</label>
+            <input type="password" name="password_confirmation" required autocomplete="new-password"
+                   class="mt-1 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring">
         </div>
 
         <div class="flex items-center justify-between gap-3 pt-2">
-            <a class="text-sm font-bold text-primary hover:underline" href="{{ route('login') }}">Sudah punya akun?</a>
-            <button class="btn btn-primary">Register</button>
+            <a href="{{ route('login') }}" class="text-xs font-semibold text-brand-700 dark:text-brand-300 hover:text-brand-800 dark:text-brand-300 cursor-pointer">Sudah punya akun?</a>
+            <button type="submit"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-full cursor-pointer focus-ring transition-colors">
+                Daftar
+            </button>
         </div>
     </form>
 </x-guest-layout>

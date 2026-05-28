@@ -20,14 +20,6 @@ class PetugasController extends Controller
     }
 
     /**
-     * Tampilkan form tambah petugas
-     */
-    public function create()
-    {
-        return view('petugas.create');
-    }
-
-    /**
      * Simpan data petugas
      */
     public function store(Request $request)
@@ -48,18 +40,9 @@ class PetugasController extends Controller
 
         ]);
 
-        return redirect('/petugas')
+        return redirect()
+            ->route('petugas.index')
             ->with('success', 'Data petugas berhasil ditambahkan');
-    }
-
-    /**
-     * Tampilkan form edit
-     */
-    public function edit($id)
-    {
-        $petugas = User::findOrFail($id);
-
-        return view('petugas.edit', compact('petugas'));
     }
 
     /**
@@ -73,17 +56,23 @@ class PetugasController extends Controller
             'name' => 'required',
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($petugas->id)],
             'role' => ['required', Rule::in(['petugas', 'supervisor'])],
+            'password' => ['nullable', 'min:6'],
         ]);
 
-        $petugas->update([
-
+        $data = [
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
+        ];
 
-        ]);
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
 
-        return redirect('/petugas')
+        $petugas->update($data);
+
+        return redirect()
+            ->route('petugas.index')
             ->with('success', 'Data petugas berhasil diupdate');
     }
 
@@ -96,7 +85,8 @@ class PetugasController extends Controller
 
         $petugas->delete();
 
-        return redirect('/petugas')
+        return redirect()
+            ->route('petugas.index')
             ->with('success', 'Data petugas berhasil dihapus');
     }
 }

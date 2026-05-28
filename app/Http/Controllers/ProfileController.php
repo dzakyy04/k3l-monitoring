@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Absensi;
+use App\Models\Lokasi;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,8 +19,23 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $user = $request->user();
+
+        if ($user->role === 'supervisor') {
+            $stats = [
+                ['label' => 'Petugas',  'value' => User::where('role', 'petugas')->count(), 'icon' => 'users'],
+                ['label' => 'Lokasi',   'value' => Lokasi::count(),                          'icon' => 'map-pin'],
+            ];
+        } else {
+            $stats = [
+                ['label' => 'Absensi',   'value' => Absensi::where('user_id', $user->id)->count(),                                                                          'icon' => 'clipboard-check'],
+                ['label' => 'Bulan Ini', 'value' => Absensi::where('user_id', $user->id)->whereYear('tanggal', now()->year)->whereMonth('tanggal', now()->month)->count(), 'icon' => 'calendar'],
+            ];
+        }
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'stats' => $stats,
         ]);
     }
 

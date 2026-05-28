@@ -1,340 +1,352 @@
-﻿@extends('layouts.app-petugas')
+﻿@php $pageTitle = 'Input Absensi'; $pageSubtitle = 'Isi form absensi geofencing'; @endphp
+@extends('layouts.app-petugas')
+
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+@endpush
 
 @section('content')
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-
-<div class="mx-auto max-w-6xl space-y-5">
+{{-- Title row --}}
+<section class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
     <div>
         <p class="eyebrow">Absensi Geofencing</p>
-        <h1 class="mt-1 text-[1.65rem] font-extrabold tracking-tight">Input Absensi</h1>
-        <p class="mt-1 text-sm text-muted">Pastikan GPS aktif dan Anda berada di dalam area lokasi kerja.</p>
+        <h1 class="mt-1.5 text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-tight">Input Absensi</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Pastikan GPS aktif dan Anda berada di dalam area lokasi kerja.</p>
     </div>
+    <a href="{{ route('absensi.index') }}"
+       class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:border-brand-300 rounded-full cursor-pointer focus-ring transition-colors self-start">
+        <x-icon name="arrow-left" class="w-4 h-4" />
+        Kembali
+    </a>
+</section>
 
-    @if (session('success'))
-        <x-alert type="success" :message="session('success')" />
-    @endif
+@if (session('success'))
+    <x-alert type="success" :message="session('success')" />
+@endif
+@if (session('error'))
+    <x-alert type="error" :message="session('error')" />
+@endif
+@if ($errors->any())
+    <x-alert type="error" message="Ada data yang belum sesuai. Periksa kembali form absensi." />
+@endif
 
-    @if (session('error'))
-        <x-alert type="error" :message="session('error')" />
-    @endif
+<form action="{{ route('absensi.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
+    @csrf
 
-    @if ($errors->any())
-        <x-alert type="error">Ada data yang belum sesuai. Periksa kembali form absensi.</x-alert>
-    @endif
+    {{-- Basic info --}}
+    <article class="surface-card p-5 lg:p-6">
+        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Informasi Dasar</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Tanggal & jam terisi otomatis sesuai waktu server.</p>
 
-    <form action="{{ route('absensi.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
-        @csrf
-
-        {{-- Basic info --}}
-        <div class="k3l-card-static">
-            <div class="p-5 lg:p-7">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div class="form-control">
-                        <label class="label py-1"><span class="label-text text-xs font-bold">Tanggal Absensi</span></label>
-                        <input type="text" value="{{ $tanggalHariIni }}" class="input input-bordered input-sm bg-base-200" readonly>
-                    </div>
-                    <div class="form-control">
-                        <label class="label py-1"><span class="label-text text-xs font-bold">Jam Absensi</span></label>
-                        <input type="text" value="{{ $jamSekarang }}" class="input input-bordered input-sm bg-base-200" readonly>
-                    </div>
-                    <div class="form-control">
-                        <label class="label py-1"><span class="label-text text-xs font-bold">Status</span></label>
-                        <select name="status" id="status" class="select select-bordered select-sm w-full" required>
-                            <option value="standby" {{ old('status') === 'standby' ? 'selected' : '' }}>Standby</option>
-                            <option value="progress" {{ old('status') === 'progress' ? 'selected' : '' }}>Progress</option>
-                        </select>
-                        @error('status') <p class="mt-1 text-xs font-semibold text-error">{{ $message }}</p> @enderror
-                    </div>
-                </div>
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+                <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Tanggal</label>
+                <input type="text" value="{{ $tanggalHariIni }}" readonly
+                       class="mt-1 w-full px-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 rounded-xl font-mono-data text-slate-700 dark:text-slate-300">
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Jam</label>
+                <input type="text" value="{{ $jamSekarang }}" readonly
+                       class="mt-1 w-full px-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 rounded-xl font-mono-data text-slate-700 dark:text-slate-300">
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Status</label>
+                <select name="status" id="status" required
+                        class="mt-1 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring">
+                    <option value="standby" {{ old('status') === 'standby' ? 'selected' : '' }}>Standby</option>
+                    <option value="progress" {{ old('status') === 'progress' ? 'selected' : '' }}>Progress</option>
+                </select>
+                @error('status') <p class="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">{{ $message }}</p> @enderror
             </div>
         </div>
+    </article>
 
-        {{-- Geofencing --}}
-        <div class="k3l-card-static">
-            <div class="p-5 lg:p-7">
-                <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.4fr]">
-                    <div class="space-y-4">
-                        <div class="form-control">
-                            <label class="label py-1"><span class="label-text text-xs font-bold">Lokasi Geofencing</span></label>
-                            <select name="lokasi_id" id="lokasiSelect" class="select select-bordered select-sm w-full" required>
-                                <option value="">-- Pilih lokasi resmi --</option>
-                                @foreach($lokasiList as $lokasi)
-                                    <option
-                                        value="{{ $lokasi->id }}"
-                                        data-name="{{ $lokasi->nama_lokasi }}"
-                                        data-lat="{{ $lokasi->latitude }}"
-                                        data-lng="{{ $lokasi->longitude }}"
-                                        data-radius="{{ $lokasi->radius }}"
-                                        data-polygon="{{ json_encode($lokasi->polygon) }}"
-                                        {{ old('lokasi_id') == $lokasi->id ? 'selected' : '' }}
-                                    >
-                                        {{ $lokasi->nama_lokasi }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('lokasi_id') <p class="mt-1 text-xs font-semibold text-error">{{ $message }}</p> @enderror
-                        </div>
+    {{-- Geofencing --}}
+    <article class="surface-card p-5 lg:p-6">
+        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Validasi Geofencing</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Pilih lokasi resmi, izinkan GPS, lalu pastikan posisi Anda berada di dalam polygon.</p>
 
-                        <div class="form-control">
-                            <label class="label py-1"><span class="label-text text-xs font-bold">Cari di Maps</span></label>
-                            <div class="join w-full">
-                                <input id="mapSearch" type="text" class="input input-bordered input-sm join-item flex-1" placeholder="Cari alamat atau nama tempat">
-                                <button type="button" id="btnSearchMap" class="btn btn-neutral btn-sm join-item">Cari</button>
-                            </div>
-                            <div id="searchResults" class="mt-2 space-y-1"></div>
-                        </div>
+        <div class="mt-4 grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-5">
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Lokasi Geofence</label>
+                    <select name="lokasi_id" id="lokasiSelect" required
+                            class="mt-1 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring">
+                        <option value="">— Pilih lokasi resmi —</option>
+                        @foreach($lokasiList as $lokasi)
+                            <option value="{{ $lokasi->id }}"
+                                    data-name="{{ $lokasi->nama_lokasi }}"
+                                    data-lat="{{ $lokasi->latitude }}"
+                                    data-lng="{{ $lokasi->longitude }}"
+                                    data-radius="{{ $lokasi->radius }}"
+                                    data-polygon="{{ json_encode($lokasi->polygon) }}"
+                                    {{ old('lokasi_id') == $lokasi->id ? 'selected' : '' }}>
+                                {{ $lokasi->nama_lokasi }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('lokasi_id') <p class="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">{{ $message }}</p> @enderror
+                </div>
 
-                        <x-alert type="info">Validasi memakai GPS Anda dan batas area polygon lokasi geofencing yang dipilih.</x-alert>
-
-                        <div id="statusArea">
-                            <x-alert type="warning">Menunggu akses GPS. Izinkan lokasi agar tombol absen aktif.</x-alert>
-                        </div>
-
-                        <button type="button" id="btnRefreshGps" class="btn btn-outline btn-sm w-full gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                            Ambil Ulang Lokasi GPS
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Cari Lokasi di Maps</label>
+                    <div class="mt-1 flex gap-2">
+                        <input id="mapSearch" type="text" placeholder="Contoh: Kantor PLN Palembang"
+                               class="flex-1 px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring">
+                        <button type="button" id="btnSearchMap"
+                                class="px-4 py-2.5 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl cursor-pointer focus-ring">
+                            Cari
                         </button>
                     </div>
-
-                    <div id="map" class="min-h-[350px] rounded-2xl border border-base-300 bg-base-200 lg:min-h-[420px]"></div>
+                    <div id="searchResults" class="mt-2 space-y-1"></div>
                 </div>
-            </div>
-        </div>
 
-        {{-- Lokasi Pekerjaan --}}
-        <div class="k3l-card-static">
-            <div class="p-5 lg:p-7">
-                <div class="form-control">
-                    <label class="label py-1"><span class="label-text text-xs font-bold">Lokasi Pekerjaan</span></label>
-                    <input type="text" name="lokasi" id="lokasiKerja" value="{{ old('lokasi') }}" class="input input-bordered input-sm w-full" placeholder="Contoh: Area panel listrik lantai 2">
-                    @error('lokasi') <p class="mt-1 text-xs font-semibold text-error">{{ $message }}</p> @enderror
+                <div id="statusArea">
+                    <x-alert type="warning" message="Menunggu akses GPS. Izinkan lokasi agar tombol absen aktif." />
                 </div>
+
+                <button type="button" id="btnRefreshGps"
+                        class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:border-brand-300 rounded-full cursor-pointer focus-ring transition-colors">
+                    <x-icon name="refresh-cw" class="w-4 h-4" />
+                    Ambil Ulang Lokasi GPS
+                </button>
             </div>
-        </div>
 
-        {{-- Uraian --}}
-        <div class="k3l-card-static">
-            <div class="p-5 lg:p-7">
-                <div class="form-control">
-                    <label class="label py-1"><span class="label-text text-xs font-bold">Uraian Kegiatan</span></label>
-                    <textarea name="uraian" rows="3" class="textarea textarea-bordered w-full text-sm" placeholder="Tuliskan kegiatan atau kondisi standby..." required>{{ old('uraian') }}</textarea>
-                    @error('uraian') <p class="mt-1 text-xs font-semibold text-error">{{ $message }}</p> @enderror
-                </div>
+            <div id="map" class="min-h-[360px] lg:min-h-[420px] rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-800"></div>
+        </div>
+    </article>
+
+    {{-- Lokasi pekerjaan --}}
+    <article class="surface-card p-5 lg:p-6">
+        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Lokasi Pekerjaan</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Detail spesifik di mana pekerjaan dilakukan dalam area geofence.</p>
+
+        <input type="text" name="lokasi" id="lokasiKerja" value="{{ old('lokasi') }}"
+               placeholder="Contoh: Area panel listrik lantai 2"
+               class="mt-4 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring">
+        @error('lokasi') <p class="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">{{ $message }}</p> @enderror
+    </article>
+
+    {{-- Uraian --}}
+    <article class="surface-card p-5 lg:p-6">
+        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Uraian Kegiatan</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Tuliskan ringkasan aktivitas atau kondisi standby.</p>
+
+        <textarea name="uraian" rows="4" required placeholder="Tuliskan kegiatan atau kondisi standby..."
+                  class="mt-4 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring resize-y">{{ old('uraian') }}</textarea>
+        @error('uraian') <p class="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">{{ $message }}</p> @enderror
+    </article>
+
+    {{-- APD Checklist --}}
+    <article id="progressBox" class="surface-card p-5 lg:p-6">
+        <div class="flex items-center justify-between gap-3">
+            <div>
+                <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Checklist APD</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Centang APD yang dipakai saat bekerja.</p>
             </div>
+            <span class="pill pill-info"><span class="dot"></span>Wajib untuk Progress</span>
         </div>
-
-        {{-- APD Checklist --}}
-        <div id="progressBox" class="k3l-card-static">
-            <div class="p-5 lg:p-7">
-                <h2 class="text-base font-extrabold text-base-content">Checklist APD</h2>
-                <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                    @foreach($apdItems as $item)
-                        <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-base-300 px-4 py-3 text-sm font-semibold transition hover:bg-base-200">
-                            <input type="checkbox" name="checklist_apd[]" value="{{ $item }}" class="checkbox checkbox-primary checkbox-sm" {{ in_array($item, old('checklist_apd', []), true) ? 'checked' : '' }}>
-                            {{ $item }}
-                        </label>
-                    @endforeach
-                </div>
-                @error('checklist_apd') <p class="mt-2 text-xs font-semibold text-error">{{ $message }}</p> @enderror
-            </div>
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            @foreach($apdItems as $item)
+                <label class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl hover:border-brand-300 hover:bg-brand-50 dark:hover:bg-brand-900/30 dark:bg-brand-900/20/50 cursor-pointer transition-colors">
+                    <input type="checkbox" name="checklist_apd[]" value="{{ $item }}"
+                           class="rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                           {{ in_array($item, old('checklist_apd', []), true) ? 'checked' : '' }}>
+                    {{ $item }}
+                </label>
+            @endforeach
         </div>
+        @error('checklist_apd') <p class="text-xs font-semibold text-red-600 dark:text-red-400 mt-2">{{ $message }}</p> @enderror
+    </article>
 
-        {{-- Foto --}}
-        <div class="k3l-card-static">
-            <div class="p-5 lg:p-7">
-                <div class="form-control">
-                    <label class="label py-1"><span class="label-text text-xs font-bold">Foto Bukti</span></label>
-                    <input type="file" name="foto" accept="image/*" capture="environment" class="file-input file-input-bordered file-input-sm w-full" required>
-                    <div class="mt-3">
-                        <img id="previewFoto" class="hidden w-full max-h-[300px] rounded-2xl border border-base-300 object-cover">
-                    </div>
-                    <p class="mt-2 text-xs text-base-content/50">Wajib untuk Standby dan Progress, maksimal 2 MB.</p>
-                    @error('foto') <p class="mt-1 text-xs font-semibold text-error">{{ $message }}</p> @enderror
-                </div>
-            </div>
-        </div>
+    {{-- Foto --}}
+    <article class="surface-card p-5 lg:p-6">
+        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Foto Bukti</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Wajib untuk Standby & Progress, maksimal 2 MB.</p>
 
-        <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
-        <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
+        <input type="file" name="foto" accept="image/*" capture="environment" required
+               class="mt-4 w-full text-sm text-slate-700 dark:text-slate-300 file:mr-3 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-50 dark:bg-brand-900/20 file:text-brand-700 dark:text-brand-300 hover:file:bg-brand-100 dark:bg-brand-900/40 cursor-pointer">
+        <img id="previewFoto" class="hidden mt-4 w-full max-h-[300px] rounded-2xl border border-slate-200 dark:border-white/10 object-cover">
+        @error('foto') <p class="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">{{ $message }}</p> @enderror
+    </article>
 
-        {{-- Actions --}}
-        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <a href="{{ route('absensi.index') }}" class="btn btn-outline btn-sm">Kembali</a>
-            <button id="btnSubmit" disabled class="btn btn-primary btn-sm">Absen Sekarang</button>
-        </div>
-    </form>
-</div>
+    <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
+    <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
 
+    {{-- Actions --}}
+    <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+        <a href="{{ route('absensi.index') }}"
+           class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 rounded-full cursor-pointer focus-ring transition-colors">
+            Batal
+        </a>
+        <button id="btnSubmit" type="submit" disabled
+                class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 disabled:cursor-not-allowed rounded-full cursor-pointer focus-ring transition-colors">
+            <x-icon name="check-circle" class="w-4 h-4" />
+            Absen Sekarang
+        </button>
+    </div>
+</form>
+
+@endsection
+
+@push('scripts')
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-    const lokasiSelect = document.getElementById('lokasiSelect');
-    const statusArea = document.getElementById('statusArea');
-    const btnSubmit = document.getElementById('btnSubmit');
-    const btnRefreshGps = document.getElementById('btnRefreshGps');
-    const statusInput = document.getElementById('status');
-    const progressBox = document.getElementById('progressBox');
-    const mapSearch = document.getElementById('mapSearch');
-    const btnSearchMap = document.getElementById('btnSearchMap');
-    const searchResults = document.getElementById('searchResults');
-    const lokasiKerja = document.getElementById('lokasiKerja');
-    const latitudeInput = document.getElementById('latitude');
-    const longitudeInput = document.getElementById('longitude');
-    const fotoInput = document.querySelector('input[name="foto"]');
-    const previewFoto = document.getElementById('previewFoto');
+const lokasiSelect   = document.getElementById('lokasiSelect');
+const statusArea     = document.getElementById('statusArea');
+const btnSubmit      = document.getElementById('btnSubmit');
+const btnRefreshGps  = document.getElementById('btnRefreshGps');
+const statusInput    = document.getElementById('status');
+const progressBox    = document.getElementById('progressBox');
+const mapSearch      = document.getElementById('mapSearch');
+const btnSearchMap   = document.getElementById('btnSearchMap');
+const searchResults  = document.getElementById('searchResults');
+const lokasiKerja    = document.getElementById('lokasiKerja');
+const latitudeInput  = document.getElementById('latitude');
+const longitudeInput = document.getElementById('longitude');
+const fotoInput      = document.querySelector('input[name="foto"]');
+const previewFoto    = document.getElementById('previewFoto');
 
-    let map = L.map('map').setView([-2.990934, 104.756554], 13);
-    let userMarker;
-    let searchMarker;
-    let polygonLayer;
-    let userLat = parseFloat(latitudeInput.value) || null;
-    let userLng = parseFloat(longitudeInput.value) || null;
+let map = L.map('map').setView([-2.990934, 104.756554], 13);
+let userMarker, searchMarker, polygonLayer;
+let userLat = parseFloat(latitudeInput.value) || null;
+let userLng = parseFloat(longitudeInput.value) || null;
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
 
-    function alertHtml(type, text) {
-        const icons = {
-            success: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />',
-            error: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />',
-            warning: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />',
-            info: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />'
-        };
-        const classes = { success: 'alert-success', error: 'alert-error', warning: 'alert-warning', info: 'alert-info' };
-        return `<div class="alert ${classes[type]} text-sm font-semibold" role="alert"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">${icons[type]}</svg><span>${text}</span></div>`;
+function setStatus(type, message) {
+    const config = {
+        success: 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200',
+        error:   'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-500/10 border-red-200',
+        warning: 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 border-amber-200',
+        info:    'text-sky-700 bg-sky-50 dark:bg-sky-500/10 border-sky-200',
+    }[type];
+    statusArea.innerHTML = `<div class="inline-flex items-start gap-2 px-4 py-2.5 text-sm font-semibold border rounded-xl w-full ${config}"><span>${message}</span></div>`;
+}
+
+function syncProgressBox() {
+    progressBox.style.display = statusInput.value === 'progress' ? 'block' : 'none';
+}
+
+function selectedLokasi() {
+    const opt = lokasiSelect.options[lokasiSelect.selectedIndex];
+    if (!opt || !opt.value) return null;
+    let polygon = null;
+    try { polygon = JSON.parse(opt.dataset.polygon); } catch (e) {}
+    return {
+        id: opt.value,
+        name: opt.dataset.name,
+        lat: parseFloat(opt.dataset.lat),
+        lng: parseFloat(opt.dataset.lng),
+        radius: parseFloat(opt.dataset.radius),
+        polygon
+    };
+}
+
+function pointInPolygon(lat, lng, polygon) {
+    if (!polygon || polygon.length < 3) return false;
+    let inside = false;
+    const n = polygon.length;
+    for (let i = 0, j = n - 1; i < n; j = i++) {
+        const xi = polygon[i][0], yi = polygon[i][1];
+        const xj = polygon[j][0], yj = polygon[j][1];
+        const intersect = ((yi > lng) !== (yj > lng)) && (lat < (xj - xi) * (lng - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
     }
+    return inside;
+}
 
-    function syncProgressBox() {
-        progressBox.style.display = statusInput.value === 'progress' ? 'block' : 'none';
+function drawSelectedLokasi() {
+    const lokasi = selectedLokasi();
+    if (polygonLayer) map.removeLayer(polygonLayer);
+    if (!lokasi) { validateGeofence(); return; }
+    if (lokasi.polygon && lokasi.polygon.length >= 3) {
+        const latlngs = lokasi.polygon.map(p => [p[0], p[1]]);
+        polygonLayer = L.polygon(latlngs, { color: '#0284C7', fillColor: '#7DD3FC', fillOpacity: 0.2 }).addTo(map).bindPopup(lokasi.name);
+        map.fitBounds(polygonLayer.getBounds());
+    } else {
+        polygonLayer = L.circle([lokasi.lat, lokasi.lng], { radius: lokasi.radius, color: '#0284C7', fillColor: '#7DD3FC', fillOpacity: 0.2 }).addTo(map);
+        map.setView([lokasi.lat, lokasi.lng], 16);
     }
+    validateGeofence();
+}
 
-    function selectedLokasi() {
-        const option = lokasiSelect.options[lokasiSelect.selectedIndex];
-        if (!option || !option.value) return null;
-        let polygon = null;
-        try { polygon = JSON.parse(option.dataset.polygon); } catch (e) {}
-        return {
-            id: option.value,
-            name: option.dataset.name,
-            lat: parseFloat(option.dataset.lat),
-            lng: parseFloat(option.dataset.lng),
-            radius: parseFloat(option.dataset.radius),
-            polygon: polygon
-        };
+function validateGeofence() {
+    const lokasi = selectedLokasi();
+    btnSubmit.disabled = true;
+    if (!lokasi) { setStatus('warning', 'Pilih lokasi geofencing terlebih dahulu.'); return; }
+    if (!userLat || !userLng) { setStatus('warning', 'Menunggu GPS. Izinkan akses lokasi dan tekan tombol di atas bila perlu.'); return; }
+    let inside = false;
+    if (lokasi.polygon && lokasi.polygon.length >= 3) {
+        inside = pointInPolygon(userLat, userLng, lokasi.polygon);
+    } else {
+        inside = map.distance([userLat, userLng], [lokasi.lat, lokasi.lng]) <= lokasi.radius;
     }
-
-    function pointInPolygon(lat, lng, polygon) {
-        if (!polygon || polygon.length < 3) return false;
-        let inside = false;
-        const n = polygon.length;
-        for (let i = 0, j = n - 1; i < n; j = i++) {
-            const xi = polygon[i][0], yi = polygon[i][1];
-            const xj = polygon[j][0], yj = polygon[j][1];
-            const intersect = ((yi > lng) !== (yj > lng)) && (lat < (xj - xi) * (lng - yi) / (yj - yi) + xi);
-            if (intersect) inside = !inside;
-        }
-        return inside;
+    if (inside) {
+        setStatus('success', 'Anda berada di dalam area geofencing. Absensi dapat dilakukan.');
+        btnSubmit.disabled = false;
+    } else {
+        setStatus('error', 'Anda berada di luar area geofencing. Pastikan berada di dalam batas wilayah yang ditentukan.');
     }
+}
 
-    function drawSelectedLokasi() {
-        const lokasi = selectedLokasi();
-        if (polygonLayer) map.removeLayer(polygonLayer);
-        if (!lokasi) { validateGeofence(); return; }
-        if (lokasi.polygon && lokasi.polygon.length >= 3) {
-            const latlngs = lokasi.polygon.map(p => [p[0], p[1]]);
-            polygonLayer = L.polygon(latlngs, { color: '#0891b2', fillColor: '#67e8f9', fillOpacity: 0.2 }).addTo(map).bindPopup(lokasi.name);
-            map.fitBounds(polygonLayer.getBounds());
-        } else {
-            polygonLayer = L.circle([lokasi.lat, lokasi.lng], { radius: lokasi.radius, color: '#0891b2', fillColor: '#67e8f9', fillOpacity: 0.2 }).addTo(map);
-            map.setView([lokasi.lat, lokasi.lng], 16);
-        }
-        validateGeofence();
-    }
+function getGps() {
+    setStatus('info', 'Mengambil lokasi GPS...');
+    if (!navigator.geolocation) { setStatus('error', 'Browser tidak mendukung geolocation.'); return; }
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            userLat = pos.coords.latitude;
+            userLng = pos.coords.longitude;
+            latitudeInput.value = userLat;
+            longitudeInput.value = userLng;
+            if (userMarker) map.removeLayer(userMarker);
+            userMarker = L.marker([userLat, userLng]).addTo(map).bindPopup('Lokasi Anda');
+            map.setView([userLat, userLng], 16);
+            validateGeofence();
+        },
+        () => setStatus('error', 'GPS tidak diizinkan atau gagal didapatkan. Aktifkan GPS lalu coba lagi.'),
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+}
 
-    function validateGeofence() {
-        const lokasi = selectedLokasi();
-        btnSubmit.disabled = true;
-        if (!lokasi) { statusArea.innerHTML = alertHtml('warning', 'Pilih lokasi geofencing terlebih dahulu.'); return; }
-        if (!userLat || !userLng) { statusArea.innerHTML = alertHtml('warning', 'Menunggu GPS. Izinkan akses lokasi dan tekan Ambil Ulang Lokasi GPS bila perlu.'); return; }
-        let isInside = false;
-        if (lokasi.polygon && lokasi.polygon.length >= 3) {
-            isInside = pointInPolygon(userLat, userLng, lokasi.polygon);
-        } else {
-            const distance = map.distance([userLat, userLng], [lokasi.lat, lokasi.lng]);
-            isInside = distance <= lokasi.radius;
-        }
-        if (isInside) {
-            statusArea.innerHTML = alertHtml('success', 'Anda berada di dalam area geofencing. Absensi dapat dilakukan.');
-            btnSubmit.disabled = false;
-        } else {
-            statusArea.innerHTML = alertHtml('error', 'Anda berada di luar area geofencing. Pastikan Anda berada di dalam batas wilayah yang ditentukan.');
-        }
-    }
-
-    function getGps() {
-        statusArea.innerHTML = alertHtml('info', 'Mengambil lokasi GPS...');
-        if (!navigator.geolocation) { statusArea.innerHTML = alertHtml('error', 'Browser tidak mendukung geolocation.'); return; }
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                userLat = position.coords.latitude;
-                userLng = position.coords.longitude;
-                latitudeInput.value = userLat;
-                longitudeInput.value = userLng;
-                if (userMarker) map.removeLayer(userMarker);
-                userMarker = L.marker([userLat, userLng]).addTo(map).bindPopup('Lokasi Anda');
-                map.setView([userLat, userLng], 16);
-                validateGeofence();
-            },
-            function(error) {
-                statusArea.innerHTML = alertHtml('error', 'GPS tidak diizinkan atau lokasi gagal didapatkan. Aktifkan GPS lalu coba lagi.');
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-        );
-    }
-
-    async function searchMap() {
-        const query = mapSearch.value.trim();
-        if (!query) return;
-        searchResults.innerHTML = '<div class="text-xs font-semibold text-base-content/50">Mencari lokasi...</div>';
-        try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(query)}`);
-            const data = await response.json();
-            if (!data.length) { searchResults.innerHTML = '<div class="text-xs font-semibold text-error">Lokasi tidak ditemukan.</div>'; return; }
-            searchResults.innerHTML = data.map((item, index) => `
-                <button type="button" data-index="${index}" class="map-result btn btn-ghost btn-xs justify-start w-full text-left text-[0.7rem] font-semibold">${item.display_name}</button>
-            `).join('');
-            document.querySelectorAll('.map-result').forEach(button => {
-                button.addEventListener('click', function() {
-                    const item = data[this.dataset.index];
-                    const lat = parseFloat(item.lat);
-                    const lng = parseFloat(item.lon);
-                    if (searchMarker) map.removeLayer(searchMarker);
-                    searchMarker = L.marker([lat, lng]).addTo(map).bindPopup(item.display_name).openPopup();
-                    map.setView([lat, lng], 16);
-                    lokasiKerja.value = item.display_name;
-                });
+async function searchMap() {
+    const q = mapSearch.value.trim();
+    if (!q) return;
+    searchResults.innerHTML = '<div class="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500">Mencari lokasi...</div>';
+    try {
+        const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(q)}`);
+        const data = await r.json();
+        if (!data.length) { searchResults.innerHTML = '<div class="text-xs font-semibold text-red-600 dark:text-red-400">Lokasi tidak ditemukan.</div>'; return; }
+        searchResults.innerHTML = data.map((item, i) =>
+            `<button type="button" data-idx="${i}" class="map-result block w-full text-left text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800/60 px-3 py-2 rounded-lg cursor-pointer focus-ring">${item.display_name}</button>`
+        ).join('');
+        document.querySelectorAll('.map-result').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const item = data[this.dataset.idx];
+                const lat = parseFloat(item.lat), lng = parseFloat(item.lon);
+                if (searchMarker) map.removeLayer(searchMarker);
+                searchMarker = L.marker([lat, lng]).addTo(map).bindPopup(item.display_name).openPopup();
+                map.setView([lat, lng], 16);
+                lokasiKerja.value = item.display_name;
             });
-        } catch (error) {
-            searchResults.innerHTML = '<div class="text-xs font-semibold text-error">Pencarian maps gagal. Periksa koneksi internet.</div>';
-        }
-    }
+        });
+    } catch (e) { searchResults.innerHTML = '<div class="text-xs font-semibold text-red-600 dark:text-red-400">Pencarian gagal. Periksa koneksi.</div>'; }
+}
 
-    statusInput.addEventListener('change', syncProgressBox);
-    lokasiSelect.addEventListener('change', drawSelectedLokasi);
-    btnRefreshGps.addEventListener('click', getGps);
-    btnSearchMap.addEventListener('click', searchMap);
-    mapSearch.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter') { event.preventDefault(); searchMap(); }
-    });
+statusInput.addEventListener('change', syncProgressBox);
+lokasiSelect.addEventListener('change', drawSelectedLokasi);
+btnRefreshGps.addEventListener('click', getGps);
+btnSearchMap.addEventListener('click', searchMap);
+mapSearch.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); searchMap(); } });
 
-    syncProgressBox();
-    drawSelectedLokasi();
-    getGps();
+syncProgressBox();
+drawSelectedLokasi();
+getGps();
 
-    fotoInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) { previewFoto.src = URL.createObjectURL(file); previewFoto.classList.remove('hidden'); }
-    });
+fotoInput.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (file) { previewFoto.src = URL.createObjectURL(file); previewFoto.classList.remove('hidden'); }
+});
 </script>
-@endsection
+@endpush

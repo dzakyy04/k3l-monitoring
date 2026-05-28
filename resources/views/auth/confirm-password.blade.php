@@ -1,21 +1,23 @@
 <x-guest-layout>
-    <div>
-        <p class="text-xs font-bold uppercase tracking-widest text-primary">Keamanan</p>
-        <h1 class="mt-2 text-2xl font-extrabold tracking-tight text-base-content">Konfirmasi Password</h1>
-        <p class="mt-2 text-sm leading-relaxed text-base-content/60">Area ini memerlukan konfirmasi password sebelum melanjutkan.</p>
-    </div>
+    <p class="eyebrow">Keamanan</p>
+    <h1 class="mt-2 text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Konfirmasi Password</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Area ini memerlukan konfirmasi password sebelum melanjutkan.</p>
 
     <form method="POST" action="{{ route('password.confirm') }}" class="mt-6 space-y-4">
         @csrf
 
-        <div class="form-control">
-            <label class="label" for="password"><span class="label-text font-bold">Password</span></label>
-            <input id="password" type="password" name="password" required autocomplete="current-password" class="input input-bordered w-full" placeholder="Masukkan password">
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div>
+            <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Password</label>
+            <input type="password" name="password" required autocomplete="current-password"
+                   class="mt-1 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring">
+            @error('password') <p class="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">{{ $message }}</p> @enderror
         </div>
 
         <div class="flex justify-end pt-2">
-            <button class="btn btn-primary">Konfirmasi</button>
+            <button type="submit"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-full cursor-pointer focus-ring transition-colors">
+                Konfirmasi
+            </button>
         </div>
     </form>
 </x-guest-layout>

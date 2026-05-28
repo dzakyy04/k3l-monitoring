@@ -1,113 +1,200 @@
-@extends('layouts.app-supervisor')
+@php
+    $pageTitle = 'Absensi';
+    $pageSubtitle = 'Riwayat kehadiran petugas';
+    $layout = auth()->user()->role === 'supervisor' ? 'layouts.app-supervisor' : 'layouts.app-petugas';
+@endphp
+@extends($layout)
 
 @section('content')
 
-<div class="space-y-5">
-
-    {{-- Header --}}
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-            <p class="eyebrow">Data Absensi</p>
-            <h1 class="mt-1.5 text-[1.65rem] font-extrabold tracking-tight">Riwayat Absensi</h1>
-        </div>
-        <a href="{{ route('absensi.create') }}" class="btn btn-sm btn-primary gap-1.5">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-            Tambah
-        </a>
+{{-- Title row --}}
+<section class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+    <div>
+        <p class="eyebrow">Data Kehadiran</p>
+        <h1 class="mt-1.5 text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-tight">Riwayat Absensi</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">{{ $absensi->count() }} catatan dari {{ \Carbon\Carbon::parse($tanggalDari)->translatedFormat('d M Y') }} sampai {{ \Carbon\Carbon::parse($tanggalSampai)->translatedFormat('d M Y') }}.</p>
     </div>
-
-    {{-- Filter --}}
-    <form method="GET" action="{{ route('absensi.index') }}" class="k3l-card-static p-4">
-        <div class="flex flex-wrap items-end gap-3">
-            <div class="form-control min-w-0 flex-1">
-                <label class="label pb-1"><span class="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-muted">Dari</span></label>
-                <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}" class="input input-bordered input-sm w-full">
-            </div>
-            <div class="form-control min-w-0 flex-1">
-                <label class="label pb-1"><span class="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-muted">Sampai</span></label>
-                <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}" class="input input-bordered input-sm w-full">
-            </div>
-            <button class="btn btn-sm btn-primary">Filter</button>
-        </div>
-    </form>
-
-    @if (session('success'))
-        <x-alert type="success" :message="session('success')" />
-    @endif
-
-    {{-- Mobile Cards --}}
-    <div class="space-y-2.5 lg:hidden">
-        @forelse($absensi as $item)
-            <a href="{{ route('absensi.show', $item) }}" class="k3l-card block p-4">
-                <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                        <p class="text-sm font-bold tracking-tight">{{ $item->user->name ?? '—' }}</p>
-                        <p class="mt-0.5 text-xs text-muted">{{ optional($item->tanggal)->format('d M Y') }} · {{ $item->jam ? substr($item->jam, 0, 5) : '' }}</p>
-                    </div>
-                    <span class="badge badge-sm rounded-full font-bold uppercase {{ $item->status === 'progress' ? 'badge-primary' : 'badge-ghost' }}">
-                        {{ $item->status }}
-                    </span>
-                </div>
-                @if($item->lokasi)
-                    <p class="mt-2 truncate text-xs text-muted">📍 {{ $item->lokasi }}</p>
-                @endif
+    <div class="flex items-center gap-2">
+        @if(auth()->user()->role === 'petugas')
+            <a href="{{ route('absensi.create') }}"
+               class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-full cursor-pointer focus-ring transition-colors shadow-soft">
+                <x-icon name="plus" class="w-4 h-4" />
+                <span>Input Absensi</span>
             </a>
-        @empty
-            <div class="k3l-card-static p-10 text-center">
-                <p class="text-sm font-semibold text-muted">Belum ada data absensi</p>
-            </div>
-        @endforelse
+        @endif
+        @if(auth()->user()->role === 'supervisor')
+            <a href="{{ route('absensi.download', ['tanggal_dari' => $tanggalDari, 'tanggal_sampai' => $tanggalSampai]) }}"
+               class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:border-brand-300 rounded-full cursor-pointer focus-ring transition-colors">
+                <x-icon name="download" class="w-4 h-4" />
+                <span>Export Excel</span>
+            </a>
+        @endif
     </div>
+</section>
 
-    {{-- Desktop Table --}}
-    <div class="k3l-card-static hidden overflow-hidden lg:block">
-        <div class="overflow-x-auto">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Petugas</th>
-                        <th>Tanggal</th>
-                        <th>Jam</th>
-                        <th>Status</th>
-                        <th>Lokasi</th>
-                        <th class="text-right">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($absensi as $item)
-                        <tr>
-                            <td class="font-bold">{{ $item->user->name ?? '—' }}</td>
-                            <td class="text-sm text-muted">{{ optional($item->tanggal)->format('d M Y') }}</td>
-                            <td class="text-sm text-muted">{{ $item->jam ? substr($item->jam, 0, 5) : '' }}</td>
-                            <td>
-                                <span class="badge badge-sm rounded-full font-bold uppercase {{ $item->status === 'progress' ? 'badge-primary' : 'badge-ghost' }}">
-                                    {{ $item->status }}
-                                </span>
-                            </td>
-                            <td class="max-w-[200px] truncate text-sm text-muted">{{ $item->lokasi ?? '—' }}</td>
-                            <td>
-                                <div class="flex justify-end gap-1">
-                                    <a href="{{ route('absensi.show', $item) }}" class="btn btn-ghost btn-xs">Detail</a>
-                                    <a href="{{ route('absensi.edit', $item) }}" class="btn btn-ghost btn-xs text-warning">Edit</a>
-                                    <form action="{{ route('absensi.destroy', $item) }}" method="POST">
-                                        @csrf @method('DELETE')
-                                        <button onclick="return confirm('Hapus?')" class="btn btn-ghost btn-xs text-error">Hapus</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="6" class="py-12 text-center text-sm font-semibold text-muted">Belum ada data absensi</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+@if(session('success'))
+    <x-alert type="success" :message="session('success')" />
+@endif
+
+{{-- Filter --}}
+<form method="GET" action="{{ route('absensi.index') }}" class="surface-card p-5">
+    <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+        <div class="flex-1">
+            <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Tanggal Dari</label>
+            <input type="date" name="tanggal_dari" value="{{ $tanggalDari }}"
+                   class="mt-1 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring" />
         </div>
+        <div class="flex-1">
+            <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Tanggal Sampai</label>
+            <input type="date" name="tanggal_sampai" value="{{ $tanggalSampai }}"
+                   class="mt-1 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring" />
+        </div>
+        <button type="submit"
+                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-full cursor-pointer focus-ring transition-colors">
+            <x-icon name="search" class="w-4 h-4" />
+            Filter
+        </button>
     </div>
+</form>
 
-    @if(method_exists($absensi, 'links'))
-        <div>{{ $absensi->withQueryString()->links() }}</div>
-    @endif
+{{-- Mobile cards --}}
+<div class="space-y-3 lg:hidden">
+    @forelse($absensi as $item)
+        <a href="{{ route('absensi.show', $item) }}" class="block surface-card overflow-hidden hover:border-brand-200 transition-colors">
+            <div class="flex gap-3 p-3">
+                {{-- Thumbnail --}}
+                @if($item->foto)
+                    <img src="{{ asset('storage/' . $item->foto) }}" alt="Foto absensi"
+                         loading="lazy"
+                         class="w-20 h-20 rounded-xl object-cover bg-slate-100 dark:bg-slate-800 shrink-0">
+                @else
+                    <div class="w-20 h-20 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 shrink-0">
+                        <x-icon name="camera" class="w-6 h-6" />
+                    </div>
+                @endif
 
+                {{-- Info --}}
+                <div class="flex-1 min-w-0 flex flex-col">
+                    <div class="flex items-start justify-between gap-2">
+                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{{ $item->user->name ?? '—' }}</p>
+                        @if($item->status === 'progress')
+                            <span class="pill pill-info"><span class="dot"></span>Progress</span>
+                        @else
+                            <span class="pill pill-muted"><span class="dot"></span>Standby</span>
+                        @endif
+                    </div>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        {{ optional($item->tanggal)->translatedFormat('d M Y') }} · <span class="font-mono-data">{{ substr($item->jam, 0, 5) }}</span>
+                    </p>
+                    @if($item->lokasi)
+                        <p class="mt-auto pt-2 text-xs text-slate-600 dark:text-slate-400 truncate flex items-center gap-1.5">
+                            <x-icon name="map-pin" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                            <span class="truncate">{{ $item->lokasi }}</span>
+                        </p>
+                    @endif
+                </div>
+            </div>
+        </a>
+    @empty
+        <div class="surface-card p-10 text-center">
+            <span class="mx-auto w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mb-3">
+                <x-icon name="clipboard-check" class="w-5 h-5" />
+            </span>
+            <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada data absensi</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Coba ubah rentang tanggal filter.</p>
+        </div>
+    @endforelse
 </div>
+
+{{-- Desktop table --}}
+<article class="surface-card hidden lg:block overflow-hidden">
+    <div class="overflow-x-auto thin-scroll">
+        <table class="w-full text-sm">
+            <thead class="text-[11px] text-slate-500 dark:text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/60/60 dark:bg-slate-800/40">
+                <tr class="text-left">
+                    <th class="font-semibold px-5 py-3 w-[72px]">Foto</th>
+                    <th class="font-semibold px-5 py-3">Petugas</th>
+                    <th class="font-semibold px-5 py-3">Tanggal</th>
+                    <th class="font-semibold px-5 py-3">Jam</th>
+                    <th class="font-semibold px-5 py-3">Lokasi</th>
+                    <th class="font-semibold px-5 py-3">Status</th>
+                    <th class="font-semibold px-5 py-3 text-right">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                @forelse($absensi as $item)
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800/60">
+                        <td class="px-5 py-3">
+                            @if($item->foto)
+                                <a href="{{ asset('storage/' . $item->foto) }}" target="_blank" rel="noopener"
+                                   class="block group relative">
+                                    <img src="{{ asset('storage/' . $item->foto) }}" alt="Foto absensi"
+                                         loading="lazy"
+                                         class="w-12 h-12 rounded-lg object-cover bg-slate-100 dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-white/10 group-hover:ring-brand-300 transition-shadow">
+                                </a>
+                            @else
+                                <div class="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500">
+                                    <x-icon name="camera" class="w-4 h-4" />
+                                </div>
+                            @endif
+                        </td>
+                        <td class="px-5 py-3">
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 flex items-center justify-center text-xs font-bold">
+                                    {{ strtoupper(substr($item->user->name ?? 'NA', 0, 2)) }}
+                                </span>
+                                <div>
+                                    <p class="font-semibold text-slate-900 dark:text-slate-100">{{ $item->user->name ?? '—' }}</p>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 dark:text-slate-500">{{ $item->lokasiData->nama_lokasi ?? '—' }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3 text-slate-700 dark:text-slate-300">{{ optional($item->tanggal)->translatedFormat('d M Y') }}</td>
+                        <td class="px-5 py-3 font-mono-data text-slate-700 dark:text-slate-300">{{ substr($item->jam, 0, 5) }}</td>
+                        <td class="px-5 py-3 text-slate-700 dark:text-slate-300 max-w-[240px] truncate">{{ $item->lokasi ?? '—' }}</td>
+                        <td class="px-5 py-3">
+                            @if($item->status === 'progress')
+                                <span class="pill pill-info"><span class="dot"></span>Progress</span>
+                            @else
+                                <span class="pill pill-muted"><span class="dot"></span>Standby</span>
+                            @endif
+                        </td>
+                        <td class="px-5 py-3 text-right">
+                            <div class="inline-flex items-center gap-1">
+                                <a href="{{ route('absensi.show', $item) }}"
+                                   class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-brand-700 dark:hover:text-brand-300 dark:text-brand-300 hover:bg-slate-100 dark:hover:bg-slate-700 dark:bg-slate-800 cursor-pointer focus-ring"
+                                   aria-label="Detail">
+                                    <x-icon name="eye" class="w-4 h-4" />
+                                </a>
+                                @if(auth()->user()->role === 'supervisor')
+                                    <a href="{{ route('absensi.edit', $item) }}"
+                                       class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-amber-600 dark:hover:text-amber-400 dark:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-700 dark:bg-slate-800 cursor-pointer focus-ring"
+                                       aria-label="Edit">
+                                        <x-icon name="pencil" class="w-4 h-4" />
+                                    </a>
+                                    <form action="{{ route('absensi.destroy', $item) }}" method="POST" class="inline-flex">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" onclick="return confirm('Hapus data absensi ini?')"
+                                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700 dark:bg-slate-800 cursor-pointer focus-ring"
+                                                aria-label="Hapus">
+                                            <x-icon name="trash-2" class="w-4 h-4" />
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" class="px-5 py-12 text-center">
+                            <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada data absensi</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Coba ubah rentang tanggal filter.</p>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</article>
 
 @endsection

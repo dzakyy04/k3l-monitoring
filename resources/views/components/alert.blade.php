@@ -1,21 +1,15 @@
 @props(['type' => 'info', 'message' => null])
 
 @php
-    $classes = match($type) {
-        'success' => 'alert alert-success',
-        'error'   => 'alert alert-error',
-        'warning' => 'alert alert-warning',
-        default   => 'alert alert-info',
-    };
-    $icons = match($type) {
-        'success' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>',
-        'error'   => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>',
-        'warning' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>',
-        default   => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>',
-    };
+    $config = [
+        'success' => ['classes' => 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200', 'icon' => 'check-circle'],
+        'error'   => ['classes' => 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-500/10 border-red-200',           'icon' => 'x-circle'],
+        'warning' => ['classes' => 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 border-amber-200',     'icon' => 'alert-triangle'],
+        'info'    => ['classes' => 'text-sky-700 bg-sky-50 dark:bg-sky-500/10 border-sky-200',           'icon' => 'info'],
+    ][$type] ?? ['classes' => 'text-sky-700 bg-sky-50 dark:bg-sky-500/10 border-sky-200', 'icon' => 'info'];
 @endphp
 
-<div {{ $attributes->merge(['class' => $classes]) }}>
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">{!! $icons !!}</svg>
+<div {{ $attributes->merge(['class' => "inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border rounded-xl w-full {$config['classes']}"]) }}>
+    <x-icon :name="$config['icon']" class="w-4 h-4 shrink-0" />
     <span>{{ $message ?? $slot }}</span>
 </div>
