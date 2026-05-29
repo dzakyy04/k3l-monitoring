@@ -69,7 +69,7 @@ class AbsensiController extends Controller
             'checklist_apd.*' => ['string', Rule::in(self::APD_ITEMS)],
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
-            'foto' => ['required', 'image', 'max:2048'],
+            'foto' => ['required', 'image', 'max:10240'],
         ]);
 
         $lokasi = Lokasi::findOrFail($validated['lokasi_id']);
@@ -137,7 +137,7 @@ class AbsensiController extends Controller
             'uraian' => ['required', 'string'],
             'checklist_apd' => ['nullable', 'array'],
             'checklist_apd.*' => ['string', Rule::in(self::APD_ITEMS)],
-            'foto' => ['nullable', 'image', 'max:2048'],
+            'foto' => ['nullable', 'image', 'max:10240'],
         ]);
 
         if ($request->hasFile('foto')) {

@@ -163,7 +163,7 @@
     {{-- Foto --}}
     <article class="surface-card p-5 lg:p-6">
         <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Foto Bukti</h3>
-        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Wajib untuk Standby & Progress, maksimal 2 MB.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Wajib untuk Standby & Progress, maksimal 10 MB.</p>
 
         <input type="file" name="foto" accept="image/*" capture="environment" required
                class="mt-4 w-full text-sm text-slate-700 dark:text-slate-300 file:mr-3 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-50 dark:bg-brand-900/20 file:text-brand-700 dark:text-brand-300 hover:file:bg-brand-100 dark:bg-brand-900/40 cursor-pointer">
