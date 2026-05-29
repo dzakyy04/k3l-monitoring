@@ -113,7 +113,7 @@
                 </button>
             </div>
 
-            <div id="map" class="min-h-[360px] lg:min-h-[420px] rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-800"></div>
+            <div id="map" class="min-h-[360px] lg:min-h-[420px] rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-800" style="isolation:isolate"></div>
         </div>
     </article>
 
@@ -163,12 +163,28 @@
     {{-- Foto --}}
     <article class="surface-card p-5 lg:p-6">
         <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Foto Bukti</h3>
-        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Wajib untuk Standby & Progress, maksimal 10 MB.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Foto akan diberi cap tanggal, GPS, dan lokasi otomatis.</p>
 
-        <input type="file" name="foto" accept="image/*" capture="environment" required
-               class="mt-4 w-full text-sm text-slate-700 dark:text-slate-300 file:mr-3 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-50 dark:bg-brand-900/20 file:text-brand-700 dark:text-brand-300 hover:file:bg-brand-100 dark:bg-brand-900/40 cursor-pointer">
-        <img id="previewFoto" class="hidden mt-4 w-full max-h-[300px] rounded-2xl border border-slate-200 dark:border-white/10 object-cover">
-        @error('foto') <p class="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">{{ $message }}</p> @enderror
+        {{-- Hidden real file input --}}
+        <input type="file" id="fotoRaw" accept="image/*" capture="environment" class="hidden">
+        {{-- Hidden input yang dikirim ke server (berisi canvas blob) --}}
+        <input type="hidden" name="foto_base64" id="fotoBase64">
+
+        <div class="mt-4 flex flex-col items-center gap-3">
+            <button type="button" id="btnAmbilFoto"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-full cursor-pointer focus-ring transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Ambil Foto
+            </button>
+
+            <canvas id="fotoCanvas" class="hidden w-full rounded-2xl border border-slate-200 dark:border-white/10"></canvas>
+            <p id="fotoStatus" class="text-xs text-slate-500 dark:text-slate-400"></p>
+        </div>
+
+        @error('foto_base64') <p class="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">{{ $message }}</p> @enderror
     </article>
 
     <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
@@ -212,6 +228,10 @@ let map = L.map('map').setView([-2.990934, 104.756554], 13);
 let userMarker, searchMarker, polygonLayer;
 let userLat = parseFloat(latitudeInput.value) || null;
 let userLng = parseFloat(longitudeInput.value) || null;
+let userAltitude = null;
+let userSpeed = null;
+let reverseAddress = null;
+let fotoIndexNumber = Math.floor(Math.random() * 9000) + 1000;
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
 
@@ -298,16 +318,30 @@ function getGps() {
         pos => {
             userLat = pos.coords.latitude;
             userLng = pos.coords.longitude;
+            userAltitude = pos.coords.altitude;
+            userSpeed = pos.coords.speed;
             latitudeInput.value = userLat;
             longitudeInput.value = userLng;
             if (userMarker) map.removeLayer(userMarker);
             userMarker = L.marker([userLat, userLng]).addTo(map).bindPopup('Lokasi Anda');
             map.setView([userLat, userLng], 16);
             validateGeofence();
+            // Reverse geocode untuk caption foto
+            fetchReverseGeocode(userLat, userLng);
         },
         () => setStatus('error', 'GPS tidak diizinkan atau gagal didapatkan. Aktifkan GPS lalu coba lagi.'),
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
+}
+
+async function fetchReverseGeocode(lat, lng) {
+    try {
+        const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`, {
+            headers: { 'Accept-Language': 'id' }
+        });
+        const data = await r.json();
+        reverseAddress = data.address || null;
+    } catch (e) { reverseAddress = null; }
 }
 
 async function searchMap() {
@@ -344,9 +378,105 @@ syncProgressBox();
 drawSelectedLokasi();
 getGps();
 
-fotoInput.addEventListener('change', e => {
+// ─── Foto dengan caption GPS ─────────────────────────────────────────────────
+const btnAmbilFoto = document.getElementById('btnAmbilFoto');
+const fotoRaw      = document.getElementById('fotoRaw');
+const fotoCanvas   = document.getElementById('fotoCanvas');
+const fotoBase64   = document.getElementById('fotoBase64');
+const fotoStatus   = document.getElementById('fotoStatus');
+
+btnAmbilFoto.addEventListener('click', () => fotoRaw.click());
+
+fotoRaw.addEventListener('change', async e => {
     const file = e.target.files[0];
-    if (file) { previewFoto.src = URL.createObjectURL(file); previewFoto.classList.remove('hidden'); }
+    if (!file) return;
+
+    const img = new Image();
+    img.onload = async () => {
+        const W = img.naturalWidth;
+        const H = img.naturalHeight;
+
+        fotoCanvas.width  = W;
+        fotoCanvas.height = H;
+        const ctx = fotoCanvas.getContext('2d');
+
+        // Gambar foto asli
+        ctx.drawImage(img, 0, 0, W, H);
+
+        // ── Bangun teks caption ───────────────────────────────────────────
+        const now = new Date();
+        const wibOptions = { timeZone: 'Asia/Jakarta', weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
+        const wibTimeOptions = { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        const dateStr = new Intl.DateTimeFormat('id-ID', wibOptions).format(now);
+        const timeStr = new Intl.DateTimeFormat('id-ID', wibTimeOptions).format(now).replace(/:/g, '.') + ' WIB';
+
+        const latVal  = userLat  !== null ? Math.abs(userLat).toFixed(5) + (userLat  >= 0 ? 'N' : 'S') : '—';
+        const lngVal  = userLng  !== null ? Math.abs(userLng).toFixed(5) + (userLng >= 0 ? 'E' : 'W') : '—';
+        const coordStr = `${latVal} ${lngVal}`;
+
+        // Susun alamat menjadi 2 baris dari reverse geocode
+        let addrLine1 = '', addrLine2 = '';
+        if (reverseAddress) {
+            const a = reverseAddress;
+            const kel  = a.suburb || a.village || a.hamlet || a.neighbourhood || '';
+            const kec  = a.city_district || a.district || a.municipality || ''; // kecamatan (urban/rural)
+            const kab  = a.county || a.city || a.town || '';                    // kabupaten/kota (bukan municipality)
+            const prov = a.state || '';
+            addrLine1 = [kel, kec].filter(Boolean).join(', ');
+            addrLine2 = [kab, prov].filter(Boolean).join(', ');
+        }
+
+        const lines = [
+            `${dateStr} ${timeStr}`,
+            coordStr,
+            ...(addrLine1 ? [addrLine1] : []),
+            ...(addrLine2 ? [addrLine2] : ['Lokasi tidak diketahui']),
+        ];
+
+        // ── Hitung ukuran & posisi teks (pojok kanan bawah) ──────────────
+        const scale    = W / 1080;
+        const fontSize = Math.round(32 * scale);
+        const lineH    = Math.round(fontSize * 1.5);
+        const padX     = Math.round(28 * scale);
+        const padY     = Math.round(22 * scale);
+
+        // ── Teks kuning tanpa background, pojok kanan bawah ──────────────
+        ctx.font        = `bold ${fontSize}px Arial, sans-serif`;
+        ctx.textAlign   = 'right';
+        ctx.textBaseline = 'bottom';
+
+        // Shadow tebal agar teks terbaca di atas foto terang/gelap
+        ctx.shadowColor   = 'rgba(0,0,0,0.85)';
+        ctx.shadowBlur    = Math.round(8 * scale);
+        ctx.shadowOffsetX = Math.round(2 * scale);
+        ctx.shadowOffsetY = Math.round(2 * scale);
+        ctx.fillStyle   = '#FFE033';
+
+        const x = W - padX;
+        lines.slice().reverse().forEach((line, i) => {
+            const y = H - padY - i * lineH;
+            ctx.fillText(line, x, y);
+        });
+
+        // ── Tampilkan preview & simpan base64 ─────────────────────────────
+        fotoCanvas.classList.remove('hidden');
+        const dataUrl = fotoCanvas.toDataURL('image/jpeg', 0.88);
+        fotoBase64.value = dataUrl;
+        btnAmbilFoto.textContent = 'Ganti Foto';
+
+        URL.revokeObjectURL(img.src);
+    };
+    img.src = URL.createObjectURL(file);
+});
+
+// Validasi: foto wajib sebelum submit
+document.querySelector('form').addEventListener('submit', function(e) {
+    if (!fotoBase64.value) {
+        e.preventDefault();
+        fotoStatus.textContent = '⚠ Foto belum diambil. Klik "Ambil Foto" terlebih dahulu.';
+        fotoStatus.classList.add('text-red-600', 'dark:text-red-400');
+        btnAmbilFoto.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 });
 </script>
 @endpush

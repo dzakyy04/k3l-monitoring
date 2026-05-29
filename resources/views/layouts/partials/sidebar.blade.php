@@ -31,9 +31,7 @@
     {{-- Brand --}}
     <div class="h-16 flex items-center px-5 py-2 shrink-0">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5">
-            <span class="w-9 h-9 rounded-xl brand-gradient flex items-center justify-center text-white shadow-soft">
-                <img src="{{ asset('images/iconpln.png') }}" alt="PLN" class="h-5 w-5 object-contain">
-            </span>
+            <img src="{{ asset('images/logo-k3l-monitoring.jpeg') }}" alt="PLN" class="w-9 h-9 rounded-xl object-contain shrink-0">
             <span class="flex flex-col leading-tight">
                 <span class="font-bold text-slate-900 dark:text-slate-100 text-[15px]">K3L Monitoring</span>
                 <span class="text-[11px] text-slate-500 dark:text-slate-400 dark:text-slate-500 -mt-0.5">{{ ucfirst($role) }} Suite</span>

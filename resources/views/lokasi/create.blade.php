@@ -62,7 +62,7 @@
 
         <div id="map" class="mt-4 w-full rounded-2xl border border-slate-200 dark:border-white/10" style="height:420px; z-index:1;"></div>
 
-        <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Latitude (Pusat)</label>
                 <input type="text" name="latitude" id="latitude" value="{{ old('latitude') }}" readonly
@@ -72,11 +72,6 @@
                 <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Longitude (Pusat)</label>
                 <input type="text" name="longitude" id="longitude" value="{{ old('longitude') }}" readonly
                        class="mt-1 w-full px-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 rounded-xl font-mono-data text-slate-700 dark:text-slate-300">
-            </div>
-            <div>
-                <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Radius Fallback (m)</label>
-                <input type="number" name="radius" value="{{ old('radius', 100) }}" placeholder="100"
-                       class="mt-1 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring">
             </div>
         </div>
 

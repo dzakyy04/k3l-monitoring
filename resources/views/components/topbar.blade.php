@@ -5,9 +5,7 @@
 
         {{-- Mobile: brand mark + page title --}}
         <a href="{{ route('dashboard') }}" class="lg:hidden flex items-center gap-2 min-w-0 shrink-0">
-            <span class="w-9 h-9 rounded-xl brand-gradient flex items-center justify-center text-white shadow-soft shrink-0">
-                <img src="{{ asset('images/iconpln.png') }}" alt="" class="h-5 w-5 object-contain">
-            </span>
+            <img src="{{ asset('images/logo-k3l-monitoring.jpeg') }}" alt="" class="w-9 h-9 rounded-xl object-contain shrink-0">
             <span class="flex flex-col leading-tight min-w-0">
                 <span class="text-[13px] font-bold text-slate-900 dark:text-slate-100 truncate">{{ $title }}</span>
                 @if($subtitle)

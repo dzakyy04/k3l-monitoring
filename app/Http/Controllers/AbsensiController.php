@@ -61,15 +61,15 @@ class AbsensiController extends Controller
         abort_unless(Auth::user()->role === 'petugas', 403);
 
         $validated = $request->validate([
-            'lokasi_id' => ['required', 'exists:lokasis,id'],
-            'status' => ['required', Rule::in(['standby', 'progress'])],
-            'lokasi' => ['required_if:status,progress', 'nullable', 'string', 'max:255'],
-            'uraian' => ['required', 'string'],
-            'checklist_apd' => ['required_if:status,progress', 'nullable', 'array'],
+            'lokasi_id'    => ['required', 'exists:lokasis,id'],
+            'status'       => ['required', Rule::in(['standby', 'progress'])],
+            'lokasi'       => ['required_if:status,progress', 'nullable', 'string', 'max:255'],
+            'uraian'       => ['required', 'string'],
+            'checklist_apd'   => ['required_if:status,progress', 'nullable', 'array'],
             'checklist_apd.*' => ['string', Rule::in(self::APD_ITEMS)],
-            'latitude' => ['required', 'numeric', 'between:-90,90'],
-            'longitude' => ['required', 'numeric', 'between:-180,180'],
-            'foto' => ['required', 'image', 'max:10240'],
+            'latitude'     => ['required', 'numeric', 'between:-90,90'],
+            'longitude'    => ['required', 'numeric', 'between:-180,180'],
+            'foto_base64'  => ['required', 'string'],
         ]);
 
         $lokasi = Lokasi::findOrFail($validated['lokasi_id']);
@@ -82,18 +82,25 @@ class AbsensiController extends Controller
 
         $now = now(config('app.timezone'));
 
+        // Decode base64 foto dan simpan sebagai JPEG
+        $dataUrl  = $validated['foto_base64'];
+        $base64   = preg_replace('/^data:image\/\w+;base64,/', '', $dataUrl);
+        $imgData  = base64_decode($base64);
+        $fileName = 'absensi/' . uniqid('foto_', true) . '.jpg';
+        Storage::disk('public')->put($fileName, $imgData);
+
         Absensi::create([
-            'user_id' => Auth::id(),
-            'lokasi_id' => $lokasi->id,
-            'tanggal' => $now->toDateString(),
-            'jam' => $now->format('H:i:s'),
-            'status' => $validated['status'],
-            'lokasi' => $validated['lokasi'] ?? $lokasi->nama_lokasi,
-            'uraian' => $validated['uraian'],
+            'user_id'       => Auth::id(),
+            'lokasi_id'     => $lokasi->id,
+            'tanggal'       => $now->toDateString(),
+            'jam'           => $now->format('H:i:s'),
+            'status'        => $validated['status'],
+            'lokasi'        => $validated['lokasi'] ?? $lokasi->nama_lokasi,
+            'uraian'        => $validated['uraian'],
             'checklist_apd' => $validated['checklist_apd'] ?? [],
-            'latitude' => $validated['latitude'],
-            'longitude' => $validated['longitude'],
-            'foto' => $request->file('foto')->store('absensi', 'public'),
+            'latitude'      => $validated['latitude'],
+            'longitude'     => $validated['longitude'],
+            'foto'          => $fileName,
         ]);
 
         return redirect()

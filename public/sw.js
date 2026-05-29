@@ -12,7 +12,7 @@ const RUNTIME_CACHE = `k3l-runtime-${VERSION}`;
 
 const PRECACHE = [
     '/manifest.webmanifest',
-    '/images/iconpln.png',
+    '/images/logo-k3l-monitoring.jpeg',
     '/offline.html',
 ];
 

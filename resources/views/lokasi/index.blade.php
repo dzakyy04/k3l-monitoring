@@ -32,7 +32,7 @@
                 @if($item->polygon && count($item->polygon) >= 3)
                     <span class="pill pill-info"><span class="dot"></span>{{ count($item->polygon) }} titik</span>
                 @else
-                    <span class="pill pill-warning"><span class="dot"></span>{{ $item->radius }}m</span>
+                    <span class="pill pill-muted"><span class="dot"></span>Tidak ada polygon</span>
                 @endif
             </div>
             <div class="mt-4 flex items-center gap-1 border-t border-slate-100 dark:border-white/5 pt-3">
@@ -88,7 +88,7 @@
                             @if($item->polygon && count($item->polygon) >= 3)
                                 <span class="pill pill-info"><span class="dot"></span>Polygon · {{ count($item->polygon) }} titik</span>
                             @else
-                                <span class="pill pill-warning"><span class="dot"></span>Radius · {{ $item->radius }}m</span>
+                                <span class="pill pill-muted"><span class="dot"></span>Tidak ada polygon</span>
                             @endif
                         </td>
                         <td class="px-5 py-3 text-right">

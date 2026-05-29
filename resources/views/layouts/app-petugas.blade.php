@@ -13,9 +13,9 @@
     <title>{{ $pageTitle }} · K3L Monitoring</title>
 
     <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
-    <link rel="apple-touch-icon" href="{{ asset('images/iconpln.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/iconpln.png') }}">
-    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('images/iconpln.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo-k3l-monitoring.jpeg') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logo-k3l-monitoring.jpeg') }}">
+    <link rel="icon" type="image/jpeg" sizes="192x192" href="{{ asset('images/logo-k3l-monitoring.jpeg') }}">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
