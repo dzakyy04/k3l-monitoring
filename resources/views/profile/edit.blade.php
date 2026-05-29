@@ -91,7 +91,7 @@
                 <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-0.5">Nama dan email yang ditampilkan di seluruh dashboard.</p>
             </header>
 
-            <form method="POST" action="{{ route('profile.update') }}" class="p-5 sm:p-6 space-y-4">
+            <form method="POST" action="{{ route('profile.update') }}" class="p-5 sm:p-6 space-y-4" data-submit-text="Menyimpan profil...">
                 @csrf @method('PATCH')
 
                 <div>
@@ -125,7 +125,7 @@
                 <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-0.5">Gunakan password yang kuat agar akun tetap aman.</p>
             </header>
 
-            <form method="POST" action="{{ route('password.update') }}" class="p-5 sm:p-6 space-y-4">
+            <form method="POST" action="{{ route('password.update') }}" class="p-5 sm:p-6 space-y-4" data-submit-text="Mengubah password...">
                 @csrf @method('PUT')
 
                 <div>

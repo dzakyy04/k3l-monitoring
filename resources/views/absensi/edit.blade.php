@@ -1,4 +1,4 @@
-﻿@php
+@php
     $pageTitle = 'Edit Absensi';
     $checkedApd = old('checklist_apd', $absensi->checklist_apd ?? []);
 @endphp
@@ -23,7 +23,7 @@
     <x-alert type="error" message="Ada kesalahan input. Periksa field yang ditandai." />
 @endif
 
-<form action="{{ route('absensi.update', $absensi) }}" method="POST" enctype="multipart/form-data" class="space-y-5">
+<form action="{{ route('absensi.update', $absensi) }}" method="POST" enctype="multipart/form-data" class="space-y-5" data-submit-text="Menyimpan perubahan...">
     @csrf @method('PUT')
 
     {{-- Basic info --}}

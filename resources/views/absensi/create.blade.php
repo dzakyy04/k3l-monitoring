@@ -1,4 +1,4 @@
-﻿@php $pageTitle = 'Input Absensi'; $pageSubtitle = 'Isi form absensi geofencing'; @endphp
+@php $pageTitle = 'Input Absensi'; $pageSubtitle = 'Isi form absensi geofencing'; @endphp
 @extends('layouts.app-petugas')
 
 @push('styles')
@@ -31,7 +31,7 @@
     <x-alert type="error" message="Ada data yang belum sesuai. Periksa kembali form absensi." />
 @endif
 
-<form action="{{ route('absensi.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
+<form action="{{ route('absensi.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5" data-submit-text="Menyimpan absensi...">
     @csrf
 
     {{-- Basic info --}}

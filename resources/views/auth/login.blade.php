@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0284C7">
+    <meta name="view-transition" content="same-origin">
     <title>Login · K3L Monitoring</title>
     <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/iconpln.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+<body class="min-h-screen bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300" style="overscroll-behavior:contain">
 <main class="min-h-screen grid lg:grid-cols-2">
 
     {{-- ───────── Form panel ───────── --}}
@@ -37,7 +38,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('login') }}" class="mt-8 space-y-4">
+            <form method="POST" action="{{ route('login') }}" class="mt-8 space-y-4" data-submit-text="Sedang masuk...">
                 @csrf
 
                 <div>
@@ -71,7 +72,7 @@
                     Ingat saya di perangkat ini
                 </label>
 
-                <button type="submit"
+                <button type="submit" data-loading-text="Sedang masuk..."
                     class="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-full cursor-pointer focus-ring transition-colors">
                     Masuk
                     <x-icon name="arrow-right" class="w-4 h-4" />
@@ -112,5 +113,8 @@
         </div>
     </section>
 </main>
+
+@include('layouts.partials.native-feel')
+
 </body>
 </html>

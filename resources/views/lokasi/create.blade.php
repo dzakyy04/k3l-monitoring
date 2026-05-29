@@ -1,4 +1,4 @@
-﻿@php $pageTitle = 'Tambah Lokasi'; $pageSubtitle = 'Buat polygon area geofence'; @endphp
+@php $pageTitle = 'Tambah Lokasi'; $pageSubtitle = 'Buat polygon area geofence'; @endphp
 @extends('layouts.app-supervisor')
 
 @push('styles')
@@ -29,7 +29,7 @@
     </x-alert>
 @endif
 
-<form action="{{ route('lokasi.store') }}" method="POST" id="lokasiForm" class="space-y-5">
+<form action="{{ route('lokasi.store') }}" method="POST" id="lokasiForm" class="space-y-5" data-submit-text="Menyimpan lokasi...">
     @csrf
 
     <article class="surface-card p-5 lg:p-6">

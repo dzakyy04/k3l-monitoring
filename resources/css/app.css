@@ -93,12 +93,31 @@ h1, h2, h3, h4, h5, h6 {
    SCROLLBAR
    ═══════════════════════════════════════════ */
 
-.thin-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+/* Global scrollbar — brand blue */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #7DD3FC; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #38BDF8; }
+.dark ::-webkit-scrollbar-thumb { background: #0369A1; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #0284C7; }
+
+/* Firefox scrollbar */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: #7DD3FC transparent;
+}
+.dark html,
+html.dark {
+    scrollbar-color: #0369A1 transparent;
+}
+
+/* Thin scroll variant (sidebar etc) */
+.thin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
 .thin-scroll::-webkit-scrollbar-track { background: transparent; }
-.thin-scroll::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 999px; }
-.thin-scroll::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
-.dark .thin-scroll::-webkit-scrollbar-thumb { background: #334155; }
-.dark .thin-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
+.thin-scroll::-webkit-scrollbar-thumb { background: #BAE6FD; border-radius: 999px; }
+.thin-scroll::-webkit-scrollbar-thumb:hover { background: #38BDF8; }
+.dark .thin-scroll::-webkit-scrollbar-thumb { background: #075985; }
+.dark .thin-scroll::-webkit-scrollbar-thumb:hover { background: #0284C7; }
 
 /* ═══════════════════════════════════════════
    FOCUS RING
@@ -489,4 +508,255 @@ html, body, .surface-card, .kpi-card, .nav-item, .bottom-nav, .pill, input, sele
         animation-iteration-count: 1 !important;
         transition-duration: 0.001ms !important;
     }
+}
+
+/* ═══════════════════════════════════════════
+   NATIVE FEEL: OVERSCROLL PREVENTION
+   ═══════════════════════════════════════════ */
+
+html, body {
+    overscroll-behavior: contain;
+    overscroll-behavior-y: contain;
+}
+
+/* ═══════════════════════════════════════════
+   NATIVE FEEL: MPA VIEW TRANSITIONS (Chrome 126+)
+   ═══════════════════════════════════════════ */
+
+/* Enable cross-document (MPA) view transitions — browser handles it */
+@view-transition {
+    navigation: auto;
+}
+
+/* Transition animations for MPA navigations */
+::view-transition-old(root) {
+    animation: vt-fade-out 150ms ease-in forwards;
+}
+
+::view-transition-new(root) {
+    animation: vt-fade-in 200ms ease-out forwards;
+}
+
+@keyframes vt-fade-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+@keyframes vt-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════
+   NATIVE FEEL: PROGRESS BAR
+   ═══════════════════════════════════════════ */
+
+.native-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 100000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
+}
+
+.native-progress.is-active {
+    opacity: 1;
+}
+
+.native-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #0284C7 0%, #38BDF8 40%, #06B6D4 100%);
+    border-radius: 0 2px 2px 0;
+    box-shadow: 0 0 8px rgba(2, 132, 199, 0.5), 0 0 2px rgba(2, 132, 199, 0.4);
+    transition: width 300ms ease-out;
+}
+
+.dark .native-progress-bar {
+    background: linear-gradient(90deg, #0EA5E9 0%, #7DD3FC 40%, #22D3EE 100%);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.5), 0 0 3px rgba(56, 189, 248, 0.4);
+}
+
+/* ═══════════════════════════════════════════
+   NATIVE FEEL: LOADING OVERLAY
+   ═══════════════════════════════════════════ */
+
+.native-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 200ms ease, visibility 200ms ease;
+}
+
+.native-overlay.is-visible {
+    pointer-events: all;
+    opacity: 1;
+    visibility: visible;
+}
+
+.native-overlay-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.dark .native-overlay-backdrop {
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.native-overlay-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 28px 36px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    transform: scale(0.9);
+    transition: transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.native-overlay.is-visible .native-overlay-content {
+    transform: scale(1);
+}
+
+.dark .native-overlay-content {
+    background: #1E293B;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.native-overlay-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #334155;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.dark .native-overlay-text {
+    color: #CBD5E1;
+}
+
+/* Material Design circular spinner */
+.native-spinner {
+    width: 44px;
+    height: 44px;
+    animation: native-spinner-rotate 1.4s linear infinite;
+}
+
+.native-spinner svg {
+    width: 100%;
+    height: 100%;
+}
+
+.native-spinner circle {
+    stroke: #0284C7;
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: 0;
+    animation: native-spinner-dash 1.4s ease-in-out infinite;
+}
+
+.dark .native-spinner circle {
+    stroke: #38BDF8;
+}
+
+@keyframes native-spinner-rotate {
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes native-spinner-dash {
+    0% {
+        stroke-dasharray: 1, 200;
+        stroke-dashoffset: 0;
+    }
+    50% {
+        stroke-dasharray: 90, 200;
+        stroke-dashoffset: -35;
+    }
+    100% {
+        stroke-dasharray: 90, 200;
+        stroke-dashoffset: -124;
+    }
+}
+
+/* ═══════════════════════════════════════════
+   NATIVE FEEL: BUTTON LOADING STATE
+   ═══════════════════════════════════════════ */
+
+.btn-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: btn-spin 0.6s linear infinite;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.btn-loading {
+    opacity: 0.85;
+    cursor: wait !important;
+}
+
+@keyframes btn-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════
+   NATIVE FEEL: RIPPLE EFFECT
+   ═══════════════════════════════════════════ */
+
+.native-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(2, 132, 199, 0.18);
+    transform: scale(0);
+    animation: native-ripple-expand 500ms ease-out forwards;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.dark .native-ripple {
+    background: rgba(56, 189, 248, 0.15);
+}
+
+@keyframes native-ripple-expand {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+
+/* ═══════════════════════════════════════════
+   NATIVE FEEL: TOUCH OPTIMIZATIONS
+   ═══════════════════════════════════════════ */
+
+.bottom-nav-item, .nav-item, button, [role="button"], [type="submit"] {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
 }
