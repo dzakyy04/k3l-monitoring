@@ -89,18 +89,6 @@
                     @error('lokasi_id') <p class="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div>
-                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Cari Lokasi di Maps</label>
-                    <div class="mt-1 flex gap-2">
-                        <input id="mapSearch" type="text" placeholder="Contoh: Kantor PLN Palembang"
-                               class="flex-1 px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring">
-                        <button type="button" id="btnSearchMap"
-                                class="px-4 py-2.5 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl cursor-pointer focus-ring">
-                            Cari
-                        </button>
-                    </div>
-                    <div id="searchResults" class="mt-2 space-y-1"></div>
-                </div>
 
                 <div id="statusArea">
                     <x-alert type="warning" message="Menunggu akses GPS. Izinkan lokasi agar tombol absen aktif." />
@@ -215,9 +203,6 @@ const btnSubmit      = document.getElementById('btnSubmit');
 const btnRefreshGps  = document.getElementById('btnRefreshGps');
 const statusInput    = document.getElementById('status');
 const progressBox    = document.getElementById('progressBox');
-const mapSearch      = document.getElementById('mapSearch');
-const btnSearchMap   = document.getElementById('btnSearchMap');
-const searchResults  = document.getElementById('searchResults');
 const lokasiKerja    = document.getElementById('lokasiKerja');
 const latitudeInput  = document.getElementById('latitude');
 const longitudeInput = document.getElementById('longitude');
@@ -344,35 +329,9 @@ async function fetchReverseGeocode(lat, lng) {
     } catch (e) { reverseAddress = null; }
 }
 
-async function searchMap() {
-    const q = mapSearch.value.trim();
-    if (!q) return;
-    searchResults.innerHTML = '<div class="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500">Mencari lokasi...</div>';
-    try {
-        const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(q)}`);
-        const data = await r.json();
-        if (!data.length) { searchResults.innerHTML = '<div class="text-xs font-semibold text-red-600 dark:text-red-400">Lokasi tidak ditemukan.</div>'; return; }
-        searchResults.innerHTML = data.map((item, i) =>
-            `<button type="button" data-idx="${i}" class="map-result block w-full text-left text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800/60 px-3 py-2 rounded-lg cursor-pointer focus-ring">${item.display_name}</button>`
-        ).join('');
-        document.querySelectorAll('.map-result').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const item = data[this.dataset.idx];
-                const lat = parseFloat(item.lat), lng = parseFloat(item.lon);
-                if (searchMarker) map.removeLayer(searchMarker);
-                searchMarker = L.marker([lat, lng]).addTo(map).bindPopup(item.display_name).openPopup();
-                map.setView([lat, lng], 16);
-                lokasiKerja.value = item.display_name;
-            });
-        });
-    } catch (e) { searchResults.innerHTML = '<div class="text-xs font-semibold text-red-600 dark:text-red-400">Pencarian gagal. Periksa koneksi.</div>'; }
-}
-
 statusInput.addEventListener('change', syncProgressBox);
 lokasiSelect.addEventListener('change', drawSelectedLokasi);
 btnRefreshGps.addEventListener('click', getGps);
-btnSearchMap.addEventListener('click', searchMap);
-mapSearch.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); searchMap(); } });
 
 syncProgressBox();
 drawSelectedLokasi();

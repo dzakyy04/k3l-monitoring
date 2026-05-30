@@ -4,6 +4,7 @@ use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\LokasiController;
+use App\Http\Controllers\NotifikasiController;
 use App\Models\Absensi;
 use App\Models\Lokasi;
 use App\Models\User;
@@ -158,4 +159,24 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
+/*
+|--------------------------------------------------------------------------
+| NOTIFIKASI (JSON API)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->prefix('notifikasi')->group(function () {
+
+    Route::get('/', [NotifikasiController::class, 'index'])
+        ->name('notifikasi.index');
+
+    Route::post('{notifikasi}/read', [NotifikasiController::class, 'read'])
+        ->name('notifikasi.read');
+
+    Route::post('read-all', [NotifikasiController::class, 'readAll'])
+        ->name('notifikasi.readAll');
+
+});
+
 require __DIR__.'/auth.php';
+

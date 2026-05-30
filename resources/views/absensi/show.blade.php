@@ -1,4 +1,4 @@
-﻿@php
+@php
     $pageTitle = 'Detail Absensi';
     $layout = auth()->user()->role === 'supervisor' ? 'layouts.app-supervisor' : 'layouts.app-petugas';
 @endphp
@@ -36,7 +36,7 @@
     {{-- Info card --}}
     <article class="surface-card overflow-hidden">
         @if($absensi->foto)
-            <img src="{{ asset('storage/' . $absensi->foto) }}" alt="Foto absensi" class="w-full h-64 object-cover">
+            <img src="{{ asset('storage/' . $absensi->foto) }}" alt="Foto absensi" class="w-full h-auto block">
         @endif
         <div class="p-5 space-y-4">
             <div>

@@ -2,7 +2,7 @@
       "relation": ["delegate_permission/common.handle_all_urls"],
       "target": {
         "namespace": "android_app",
-        "package_name": "com.trycloudflare.reviewer_blades_click_partially.twa",
-        "sha256_cert_fingerprints": ["0A:6B:DA:06:F9:67:BD:6B:C7:71:A1:02:A8:A4:1F:D6:E0:C4:E3:E8:56:19:F8:68:0F:A9:D3:67:D1:C2:D8:F2"]
+        "package_name": "com.trycloudflare.hired_deal_producer_shall.twa",
+        "sha256_cert_fingerprints": ["F4:20:5F:43:DF:A5:92:27:65:08:80:DB:FD:A5:FF:49:19:6F:F4:7D:E2:49:C6:BC:05:B3:0B:F0:28:0D:C3:73"]
       }
     }]

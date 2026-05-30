@@ -26,5 +26,6 @@
         {{ $slot }}
     </div>
 </main>
+@include('layouts.partials.pwa')
 </body>
 </html>

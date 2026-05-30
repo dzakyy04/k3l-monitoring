@@ -28,29 +28,13 @@
         {{-- Right side actions --}}
         <div class="ml-auto flex items-center gap-2 lg:gap-3">
 
-            {{-- Install PWA button (only shows when native prompt is ready) --}}
-            <button type="button"
-                x-data="{
-                    show: !!window.pwa?._deferredPrompt,
-                    init() {
-                        window.addEventListener('pwa-state-changed', () => {
-                            this.show = !!window.pwa._deferredPrompt;
-                        });
-                    },
-                    install() {
-                        if (window.pwa?._deferredPrompt) {
-                            window.pwa.install();
-                        }
-                    }
-                }"
-                x-show="show"
-                x-cloak
-                x-on:click="install()"
+            {{-- Download APK button --}}
+            <a href="{{ asset('k3l-monitoring.apk') }}" download
                 class="inline-flex items-center gap-1.5 px-2.5 lg:px-3 py-2 text-xs font-semibold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-900/50 active:bg-brand-200 dark:active:bg-brand-900/70 border border-brand-100 dark:border-brand-800/40 rounded-full cursor-pointer focus-ring transition-colors"
-                aria-label="Install aplikasi">
+                aria-label="Download APK">
                 <x-icon name="download" class="w-3.5 h-3.5" />
-                <span class="hidden sm:inline">Install</span>
-            </button>
+                <span class="hidden sm:inline">Download APK</span>
+            </a>
 
             {{-- Theme toggle --}}
             <button type="button"
@@ -71,12 +55,92 @@
             </button>
 
             {{-- Notifications --}}
-            <button type="button"
-                class="relative w-10 h-10 rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 cursor-pointer focus-ring"
-                aria-label="Notifikasi">
-                <x-icon name="bell" class="w-5 h-5" />
-                <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-slate-900"></span>
-            </button>
+            @if(auth()->user()->role === 'supervisor')
+            <div
+                x-data="notifPanel()"
+                x-on:keydown.escape.window="open = false"
+                x-on:click.outside="open = false"
+                x-init="fetchNotifs(); startPolling()"
+                class="relative"
+            >
+                <button type="button"
+                    x-on:click="toggle()"
+                    class="relative w-10 h-10 rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 cursor-pointer focus-ring"
+                    aria-label="Notifikasi">
+                    <x-icon name="bell" class="w-5 h-5" />
+                    <span
+                        x-show="unreadCount > 0"
+                        x-text="unreadCount > 99 ? '99+' : unreadCount"
+                        x-transition
+                        class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold text-white bg-red-500 rounded-full ring-2 ring-white dark:ring-slate-900"
+                    ></span>
+                </button>
+
+                {{-- Dropdown panel --}}
+                <div
+                    x-show="open"
+                    x-cloak
+                    x-transition:enter="transition ease-out duration-150"
+                    x-transition:enter-start="opacity-0 -translate-y-1 scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave="transition ease-in duration-100"
+                    x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave-end="opacity-0 -translate-y-1 scale-95"
+                    class="absolute right-0 top-full mt-2 w-72 sm:w-80 md:w-96 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-white/10 shadow-pop overflow-hidden z-50 origin-top-right"
+                >
+                    {{-- Header --}}
+                    <div class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <x-icon name="bell" class="w-4 h-4 text-brand-600 dark:text-brand-400" />
+                            <span class="text-sm font-bold text-slate-900 dark:text-slate-100">Notifikasi</span>
+                            <span x-show="unreadCount > 0" x-text="unreadCount" class="pill pill-info text-[10px]"></span>
+                        </div>
+                        <button
+                            x-show="unreadCount > 0"
+                            x-on:click="markAllRead()"
+                            type="button"
+                            class="text-[11px] font-semibold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 cursor-pointer"
+                        >Tandai semua dibaca</button>
+                    </div>
+
+                    {{-- List --}}
+                    <div class="max-h-80 overflow-y-auto thin-scroll divide-y divide-slate-100 dark:divide-white/5">
+                        <template x-if="notifications.length === 0">
+                            <div class="px-4 py-10 text-center">
+                                <div class="w-12 h-12 mx-auto rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mb-3">
+                                    <x-icon name="bell" class="w-5 h-5" />
+                                </div>
+                                <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada notifikasi</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Notifikasi akan muncul saat petugas menambahkan absensi.</p>
+                            </div>
+                        </template>
+
+                        <template x-for="n in notifications" :key="n.id">
+                            <a
+                                :href="'/absensi/' + n.absensi_id"
+                                x-on:click="markRead(n)"
+                                class="flex gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                :class="!n.read ? 'bg-brand-50/50 dark:bg-brand-900/10' : ''"
+                            >
+                                <div class="shrink-0 mt-0.5">
+                                    <span class="w-9 h-9 rounded-xl flex items-center justify-center"
+                                        :class="!n.read ? 'bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'">
+                                        <x-icon name="clipboard-check" class="w-4 h-4" />
+                                    </span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[13px] font-semibold text-slate-900 dark:text-slate-100 truncate" x-text="n.judul"></p>
+                                    <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 line-clamp-2" x-text="n.pesan"></p>
+                                    <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1" x-text="n.waktu"></p>
+                                </div>
+                                <span x-show="!n.read" class="shrink-0 mt-2 w-2 h-2 rounded-full bg-brand-500"></span>
+                            </a>
+                        </template>
+                    </div>
+                </div>
+                </div>
+            </div>
+            @endif
 
             <div class="hidden lg:block w-px h-6 bg-slate-200 dark:bg-white/10" aria-hidden="true"></div>
 
@@ -162,15 +226,14 @@
                             <span>Profil & Password</span>
                         </a>
 
-                        {{-- Install App (only when installable) --}}
-                        <button type="button" x-show="pwaInstallable" x-cloak
-                            x-on:click="installApp()"
+                        {{-- Download APK --}}
+                        <a href="{{ asset('k3l-monitoring.apk') }}" download
                             role="menuitem"
-                            class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 active:bg-slate-100 dark:active:bg-slate-700 cursor-pointer">
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 active:bg-slate-100 dark:active:bg-slate-700 cursor-pointer">
                             <x-icon name="download" class="w-[18px] h-[18px] text-brand-600 dark:text-brand-400" />
-                            <span class="flex-1 text-left">Install Aplikasi</span>
-                            <span class="pill pill-info text-[10px]">PWA</span>
-                        </button>
+                            <span class="flex-1">Download APK</span>
+                            <span class="pill pill-info text-[10px]">APK</span>
+                        </a>
                     </div>
 
                     {{-- Theme picker --}}
@@ -218,3 +281,77 @@
         </div>
     </div>
 </header>
+
+<script>
+    function notifPanel() {
+        return {
+            open: false,
+            notifications: [],
+            unreadCount: 0,
+            _interval: null,
+
+            toggle() {
+                this.open = !this.open;
+                if (this.open) this.fetchNotifs();
+            },
+
+            async fetchNotifs() {
+                try {
+                    const res = await fetch('/notifikasi', {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    this.notifications = data.notifications;
+                    this.unreadCount = data.unread_count;
+                } catch (e) {
+                    // silently fail
+                }
+            },
+
+            startPolling() {
+                this._interval = setInterval(() => this.fetchNotifs(), 30000);
+            },
+
+            async markRead(n) {
+                if (n.read) return;
+                n.read = true;
+                this.unreadCount = Math.max(0, this.unreadCount - 1);
+                try {
+                    const token = document.querySelector('meta[name="csrf-token"]')?.content;
+                    await fetch(`/notifikasi/${n.id}/read`, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+                } catch (e) {}
+            },
+
+            async markAllRead() {
+                this.notifications.forEach(n => n.read = true);
+                this.unreadCount = 0;
+                try {
+                    const token = document.querySelector('meta[name="csrf-token"]')?.content;
+                    await fetch('/notifikasi/read-all', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+                } catch (e) {}
+            },
+
+            destroy() {
+                if (this._interval) clearInterval(this._interval);
+            }
+        }
+    }
+</script>

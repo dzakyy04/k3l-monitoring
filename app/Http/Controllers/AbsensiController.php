@@ -4,10 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Absensi;
 use App\Models\Lokasi;
+use App\Models\Notifikasi;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class AbsensiController extends Controller
 {
@@ -89,7 +97,7 @@ class AbsensiController extends Controller
         $fileName = 'absensi/' . uniqid('foto_', true) . '.jpg';
         Storage::disk('public')->put($fileName, $imgData);
 
-        Absensi::create([
+        $absensi = Absensi::create([
             'user_id'       => Auth::id(),
             'lokasi_id'     => $lokasi->id,
             'tanggal'       => $now->toDateString(),
@@ -102,6 +110,23 @@ class AbsensiController extends Controller
             'longitude'     => $validated['longitude'],
             'foto'          => $fileName,
         ]);
+
+        // Notify all supervisors about the new absensi
+        $petugasName = Auth::user()->name;
+        $statusLabel = ucfirst($validated['status']);
+        $lokasiName  = $validated['lokasi'] ?? $lokasi->nama_lokasi;
+
+        $supervisors = User::where('role', 'supervisor')->pluck('id');
+        $notifData = $supervisors->map(fn ($id) => [
+            'user_id'    => $id,
+            'absensi_id' => $absensi->id,
+            'judul'      => 'Absensi Baru',
+            'pesan'      => "{$petugasName} menambahkan absensi {$statusLabel} di {$lokasiName}",
+            'created_at' => $now,
+            'updated_at' => $now,
+        ])->toArray();
+
+        Notifikasi::insert($notifData);
 
         return redirect()
             ->route('absensi.index', [
@@ -205,50 +230,116 @@ class AbsensiController extends Controller
             ->orderBy('jam')
             ->get();
 
-        $fileName = 'laporan-absensi-' . $range['tanggal_dari'] . '-sampai-' . $range['tanggal_sampai'] . '.xls';
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Laporan Absensi');
 
-        return response()->streamDownload(function () use ($items, $range) {
-            echo '<html><head><meta charset="UTF-8">';
-            echo '<style>
-                table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; }
-                th { background: #0f172a; color: #ffffff; font-weight: bold; }
-                th, td { border: 1px solid #cbd5e1; padding: 8px; vertical-align: top; }
-                .title { font-size: 18px; font-weight: bold; margin-bottom: 4px; }
-                .range { margin-bottom: 16px; color: #475569; }
-            </style>';
-            echo '</head><body>';
-            echo '<div class="title">Laporan Absensi K3L</div>';
-            echo '<div class="range">Periode: ' . e($range['tanggal_dari']) . ' sampai ' . e($range['tanggal_sampai']) . '</div>';
-            echo '<table><thead><tr>';
+        // Column letters mapping
+        $columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'];
 
-            foreach (['No', 'Nama Petugas', 'Email', 'Tanggal', 'Jam Absen', 'Status', 'Lokasi Geofence', 'Lokasi Pekerjaan', 'Checklist APD', 'Uraian'] as $heading) {
-                echo '<th>' . e($heading) . '</th>';
+        // ── Title rows ──
+        $sheet->setCellValue('A1', 'Laporan Absensi K3L');
+        $sheet->setCellValue('A2', 'Periode: ' . $range['tanggal_dari'] . ' sampai ' . $range['tanggal_sampai']);
+        $sheet->mergeCells('A1:K1');
+        $sheet->mergeCells('A2:K2');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+        $sheet->getStyle('A2')->getFont()->setSize(11)->setItalic(true);
+
+        // ── Header row ──
+        $headers = ['No', 'Nama Petugas', 'Email', 'Tanggal', 'Jam Absen', 'Status', 'Lokasi Geofence', 'Lokasi Pekerjaan', 'Checklist APD', 'Uraian', 'Foto'];
+        $headerRow = 4;
+
+        foreach ($headers as $col => $heading) {
+            $sheet->setCellValue($columns[$col] . $headerRow, $heading);
+        }
+
+        $headerStyle = $sheet->getStyle('A' . $headerRow . ':K' . $headerRow);
+        $headerStyle->getFont()->setBold(true)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FFFFFFFF'));
+        $headerStyle->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF0F172A');
+        $headerStyle->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+
+        // ── Column widths ──
+        $widths = [6, 22, 28, 14, 12, 12, 22, 22, 30, 35, 20];
+        foreach ($widths as $i => $w) {
+            $sheet->getColumnDimension($columns[$i])->setWidth($w);
+        }
+
+        // ── Data rows ──
+        $imageHeight = 120; // px for each photo
+        $currentRow = $headerRow + 1;
+
+        foreach ($items as $index => $item) {
+            $rowData = [
+                $index + 1,
+                $item->user->name ?? 'User tidak ditemukan',
+                $item->user->email ?? '-',
+                optional($item->tanggal)->format('d M Y') ?? $item->tanggal,
+                $this->formatJam($item->jam),
+                ucfirst($item->status),
+                $item->lokasiData->nama_lokasi ?? '-',
+                $item->lokasi ?? '-',
+                $item->checklist_apd ? implode(', ', $item->checklist_apd) : '-',
+                $item->uraian ?? '-',
+            ];
+
+            foreach ($rowData as $col => $value) {
+                $sheet->setCellValue($columns[$col] . $currentRow, $value);
             }
 
-            echo '</tr></thead><tbody>';
+            // ── Embed photo ──
+            if ($item->foto && Storage::disk('public')->exists($item->foto)) {
+                $photoPath = Storage::disk('public')->path($item->foto);
 
-            foreach ($items as $index => $item) {
-                echo '<tr>';
-                echo '<td>' . ($index + 1) . '</td>';
-                echo '<td>' . e($item->user->name ?? 'User tidak ditemukan') . '</td>';
-                echo '<td>' . e($item->user->email ?? '-') . '</td>';
-                echo '<td>' . e(optional($item->tanggal)->format('d M Y') ?? $item->tanggal) . '</td>';
-                echo '<td>' . e($this->formatJam($item->jam)) . '</td>';
-                echo '<td>' . e(ucfirst($item->status)) . '</td>';
-                echo '<td>' . e($item->lokasiData->nama_lokasi ?? '-') . '</td>';
-                echo '<td>' . e($item->lokasi ?? '-') . '</td>';
-                echo '<td>' . e($item->checklist_apd ? implode(', ', $item->checklist_apd) : '-') . '</td>';
-                echo '<td>' . e($item->uraian ?? '-') . '</td>';
-                echo '</tr>';
+                $drawing = new Drawing();
+                $drawing->setName('Foto Absensi');
+                $drawing->setDescription('Foto absensi ' . ($item->user->name ?? ''));
+                $drawing->setPath($photoPath);
+                $drawing->setHeight($imageHeight);
+                $drawing->setCoordinates('K' . $currentRow);
+                $drawing->setOffsetX(5);
+                $drawing->setOffsetY(5);
+                $drawing->setWorksheet($sheet);
+
+                // Adjust row height to accommodate the image + padding
+                $sheet->getRowDimension($currentRow)->setRowHeight($imageHeight * 0.75 + 10);
+            } else {
+                $sheet->setCellValue('K' . $currentRow, '-');
             }
 
-            if ($items->isEmpty()) {
-                echo '<tr><td colspan="10">Tidak ada data absensi pada periode ini.</td></tr>';
-            }
+            // Vertical alignment for all cells in this row
+            $sheet->getStyle('A' . $currentRow . ':K' . $currentRow)
+                ->getAlignment()
+                ->setVertical(Alignment::VERTICAL_CENTER)
+                ->setWrapText(true);
 
-            echo '</tbody></table></body></html>';
+            $currentRow++;
+        }
+
+        if ($items->isEmpty()) {
+            $sheet->setCellValue('A' . $currentRow, 'Tidak ada data absensi pada periode ini.');
+            $sheet->mergeCells('A' . $currentRow . ':K' . $currentRow);
+            $currentRow++;
+        }
+
+        // ── Borders for entire data range ──
+        $lastDataRow = $currentRow - 1;
+        $sheet->getStyle('A' . $headerRow . ':K' . $lastDataRow)
+            ->getBorders()
+            ->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN)
+            ->getColor()->setARGB('FFCBD5E1');
+
+        // ── Generate and download ──
+        $fileName = 'laporan-absensi-' . $range['tanggal_dari'] . '-sampai-' . $range['tanggal_sampai'] . '.xlsx';
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+            $spreadsheet->disconnectWorksheets();
+            unset($spreadsheet);
         }, $fileName, [
-            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'max-age=0',
         ]);
     }
 
