@@ -296,26 +296,50 @@ function validateGeofencing() {
     }
 }
 
+function onGpsSuccess(pos) {
+    userLat = pos.coords.latitude;
+    userLng = pos.coords.longitude;
+    userAltitude = pos.coords.altitude;
+    userSpeed = pos.coords.speed;
+    latitudeInput.value = userLat;
+    longitudeInput.value = userLng;
+    if (userMarker) map.removeLayer(userMarker);
+    userMarker = L.marker([userLat, userLng]).addTo(map).bindPopup('Lokasi Anda');
+    map.setView([userLat, userLng], 16);
+    validateGeofencing();
+    fetchReverseGeocode(userLat, userLng);
+}
+
+function gpsErrorMessage(err) {
+    switch (err.code) {
+        case 1: return 'Izin lokasi ditolak. Buka Pengaturan > Izin Aplikasi > Lokasi, lalu izinkan.';
+        case 2: return 'Posisi tidak tersedia. Pastikan GPS aktif dan Anda tidak di dalam ruangan tertutup.';
+        case 3: return 'Waktu permintaan GPS habis. Coba lagi di area terbuka.';
+        default: return 'Gagal mendapatkan GPS. Coba lagi.';
+    }
+}
+
 function getGps() {
     setStatus('info', 'Mengambil lokasi GPS...');
     if (!navigator.geolocation) { setStatus('error', 'Browser tidak mendukung geolocation.'); return; }
+
+    // Attempt 1: high accuracy
     navigator.geolocation.getCurrentPosition(
-        pos => {
-            userLat = pos.coords.latitude;
-            userLng = pos.coords.longitude;
-            userAltitude = pos.coords.altitude;
-            userSpeed = pos.coords.speed;
-            latitudeInput.value = userLat;
-            longitudeInput.value = userLng;
-            if (userMarker) map.removeLayer(userMarker);
-            userMarker = L.marker([userLat, userLng]).addTo(map).bindPopup('Lokasi Anda');
-            map.setView([userLat, userLng], 16);
-            validateGeofencing();
-            // Reverse geocode untuk caption foto
-            fetchReverseGeocode(userLat, userLng);
+        onGpsSuccess,
+        (err) => {
+            console.warn('GPS high-accuracy failed:', err.code, err.message);
+            // Attempt 2: fallback low accuracy
+            setStatus('info', 'Mencoba GPS tanpa high-accuracy...');
+            navigator.geolocation.getCurrentPosition(
+                onGpsSuccess,
+                (err2) => {
+                    console.warn('GPS low-accuracy failed:', err2.code, err2.message);
+                    setStatus('error', gpsErrorMessage(err2));
+                },
+                { enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 }
+            );
         },
-        () => setStatus('error', 'GPS tidak diizinkan atau gagal didapatkan. Aktifkan GPS lalu coba lagi.'),
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
     );
 }
 
