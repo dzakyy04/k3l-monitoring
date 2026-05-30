@@ -33,7 +33,7 @@
                 <img src="{{ asset('images/logo-k3l-monitoring.jpeg') }}" alt="PLN" class="w-10 h-10 rounded-xl object-contain shrink-0">
                 <span class="flex flex-col leading-tight">
                     <span class="font-bold text-slate-900 dark:text-slate-100">K3L Monitoring</span>
-                    <span class="text-[11px] text-slate-500 dark:text-slate-400 dark:text-slate-500 -mt-0.5">PT PLN Safety Suite</span>
+                    <span class="text-[11px] text-slate-500 dark:text-slate-400 dark:text-slate-500 -mt-0.5">PLN Icon Plus</span>
                 </span>
             </a>
 

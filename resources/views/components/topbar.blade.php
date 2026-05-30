@@ -30,6 +30,8 @@
 
             {{-- Download APK button --}}
             <a href="{{ asset('k3l-monitoring.apk') }}" download
+                x-data="{ isStandalone: window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true }"
+                x-show="!isStandalone"
                 class="inline-flex items-center gap-1.5 px-2.5 lg:px-3 py-2 text-xs font-semibold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-900/50 active:bg-brand-200 dark:active:bg-brand-900/70 border border-brand-100 dark:border-brand-800/40 rounded-full cursor-pointer focus-ring transition-colors"
                 aria-label="Download APK">
                 <x-icon name="download" class="w-3.5 h-3.5" />
@@ -150,6 +152,7 @@
                     theme: window.getTheme(),
                     setTheme(t) { window.setTheme(t); this.theme = t; },
                     pwaInstallable: !!window.pwa?._deferredPrompt,
+                    isStandalone: window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true,
                     init() {
                         window.addEventListener('pwa-state-changed', () => {
                             this.pwaInstallable = !!window.pwa._deferredPrompt;
@@ -227,6 +230,7 @@
 
                         {{-- Download APK --}}
                         <a href="{{ asset('k3l-monitoring.apk') }}" download
+                            x-show="!isStandalone"
                             role="menuitem"
                             class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 active:bg-slate-100 dark:active:bg-slate-700 cursor-pointer">
                             <x-icon name="download" class="w-[18px] h-[18px] text-brand-600 dark:text-brand-400" />
