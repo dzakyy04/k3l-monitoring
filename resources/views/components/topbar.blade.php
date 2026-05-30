@@ -54,12 +54,12 @@
                         <span class="flex-1">Android</span>
                         <span class="pill pill-success text-[10px]">APK</span>
                     </a>
-                    <a href="{{ asset('k3l-monitoring.ipa') }}" download x-on:click="dlOpen = false"
-                       class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer border-t border-slate-100 dark:border-white/5">
+                    <button type="button" x-on:click="dlOpen = false; window.dispatchEvent(new CustomEvent('show-ios-guide'))"
+                       class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer border-t border-slate-100 dark:border-white/5">
                         <svg class="w-[18px] h-[18px] text-slate-600 dark:text-slate-300" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
                         <span class="flex-1">iOS</span>
-                        <span class="pill pill-info text-[10px]">IPA</span>
-                    </a>
+                        <span class="pill pill-info text-[10px]">Panduan</span>
+                    </button>
                 </div>
             </div>
 
@@ -263,13 +263,13 @@
                                     <span class="flex-1">Download Android</span>
                                     <span class="pill pill-success text-[10px]">APK</span>
                                 </a>
-                                <a href="{{ asset('k3l-monitoring.ipa') }}" download
+                                <button type="button" x-on:click="open = false; window.dispatchEvent(new CustomEvent('show-ios-guide'))"
                                     role="menuitem"
-                                    class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 active:bg-slate-100 dark:active:bg-slate-700 cursor-pointer">
+                                    class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 active:bg-slate-100 dark:active:bg-slate-700 cursor-pointer">
                                     <svg class="w-[18px] h-[18px] text-slate-600 dark:text-slate-300" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-                                    <span class="flex-1">Download iOS</span>
-                                    <span class="pill pill-info text-[10px]">IPA</span>
-                                </a>
+                                    <span class="flex-1">Install di iOS</span>
+                                    <span class="pill pill-info text-[10px]">Panduan</span>
+                                </button>
                             </div>
                         </template>
                     </div>
@@ -393,3 +393,98 @@
         }
     }
 </script>
+
+{{-- iOS Install Guide Modal --}}
+<div x-data="{ show: false }"
+     x-on:show-ios-guide.window="show = true"
+     x-on:keydown.escape.window="show = false"
+     x-show="show"
+     x-cloak
+     class="fixed inset-0 z-[999] flex items-center justify-center p-4"
+     style="display:none">
+    {{-- Backdrop --}}
+    <div x-show="show"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         x-on:click="show = false"
+         class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+    {{-- Modal --}}
+    <div x-show="show"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+         x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+         class="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-white/10 shadow-pop overflow-hidden">
+
+        {{-- Header --}}
+        <div class="px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-5 h-5 text-slate-700 dark:text-slate-200" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                <span class="text-sm font-bold text-slate-900 dark:text-slate-100">Install di iPhone / iPad</span>
+            </div>
+            <button type="button" x-on:click="show = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+
+        {{-- Steps --}}
+        <div class="px-5 py-5 space-y-4">
+            <p class="text-xs text-slate-500 dark:text-slate-400">Ikuti langkah berikut untuk menambahkan K3L Monitoring ke layar utama iPhone/iPad Anda:</p>
+
+            <div class="space-y-3">
+                {{-- Step 1 --}}
+                <div class="flex gap-3">
+                    <span class="shrink-0 w-7 h-7 rounded-lg bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 flex items-center justify-center text-xs font-bold">1</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Buka di Safari</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Buka halaman ini menggunakan browser <strong>Safari</strong> (bukan Chrome/Firefox).</p>
+                    </div>
+                </div>
+
+                {{-- Step 2 --}}
+                <div class="flex gap-3">
+                    <span class="shrink-0 w-7 h-7 rounded-lg bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 flex items-center justify-center text-xs font-bold">2</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Tap tombol Share</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ketuk ikon <strong>Share</strong>
+                            <svg class="inline w-4 h-4 -mt-0.5 text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                            di bagian bawah layar.</p>
+                    </div>
+                </div>
+
+                {{-- Step 3 --}}
+                <div class="flex gap-3">
+                    <span class="shrink-0 w-7 h-7 rounded-lg bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 flex items-center justify-center text-xs font-bold">3</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Tambah ke Layar Utama</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Scroll ke bawah lalu pilih <strong>"Add to Home Screen"</strong> atau <strong>"Tambah ke Layar Utama"</strong>.</p>
+                    </div>
+                </div>
+
+                {{-- Step 4 --}}
+                <div class="flex gap-3">
+                    <span class="shrink-0 w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center text-xs font-bold">✓</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Selesai!</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Aplikasi akan muncul di layar utama seperti app biasa.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Footer --}}
+        <div class="px-5 py-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-white/5">
+            <button type="button" x-on:click="show = false"
+                class="w-full px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-full cursor-pointer focus-ring transition-colors">
+                Mengerti
+            </button>
+        </div>
+    </div>
+</div>
