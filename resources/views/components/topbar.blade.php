@@ -138,7 +138,6 @@
                         </template>
                     </div>
                 </div>
-                </div>
             </div>
             @endif
 

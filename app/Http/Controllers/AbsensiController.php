@@ -246,7 +246,7 @@ class AbsensiController extends Controller
         $sheet->getStyle('A2')->getFont()->setSize(11)->setItalic(true);
 
         // ── Header row ──
-        $headers = ['No', 'Nama Petugas', 'Email', 'Tanggal', 'Jam Absen', 'Status', 'Lokasi Geofence', 'Lokasi Pekerjaan', 'Checklist APD', 'Uraian', 'Foto'];
+        $headers = ['No', 'Nama Petugas', 'Email', 'Tanggal', 'Jam Absen', 'Status', 'Lokasi Geofencing', 'Lokasi Pekerjaan', 'Checklist APD', 'Uraian', 'Foto'];
         $headerRow = 4;
 
         foreach ($headers as $col => $heading) {

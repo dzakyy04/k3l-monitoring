@@ -38,7 +38,8 @@ class LokasiController extends Controller
             'polygon' => 'required|json',
         ]);
 
-        $data = $request->only(['nama_lokasi', 'latitude', 'longitude', 'radius']);
+        $data = $request->only(['nama_lokasi', 'latitude', 'longitude']);
+        $data['radius'] = $request->input('radius') ?: 100;
         $data['polygon'] = json_decode($request->polygon, true);
 
         Lokasi::create($data);
@@ -68,7 +69,8 @@ class LokasiController extends Controller
             'polygon' => 'required|json',
         ]);
 
-        $data = $request->only(['nama_lokasi', 'latitude', 'longitude', 'radius']);
+        $data = $request->only(['nama_lokasi', 'latitude', 'longitude']);
+        $data['radius'] = $request->input('radius') ?: 100;
         $data['polygon'] = json_decode($request->polygon, true);
 
         $lokasi->update($data);

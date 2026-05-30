@@ -1,11 +1,11 @@
-@php $pageTitle = 'Lokasi'; $pageSubtitle = 'Polygon area geofence'; @endphp
+@php $pageTitle = 'Lokasi'; $pageSubtitle = 'Polygon area Geofencing'; @endphp
 @extends('layouts.app-supervisor')
 
 @section('content')
 
 <section class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
     <div>
-        <p class="eyebrow">Manajemen Geofence</p>
+        <p class="eyebrow">Manajemen Geofencing</p>
         <h1 class="mt-1.5 text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-tight">Data Lokasi</h1>
         <p class="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">{{ $lokasi->count() }} area terdaftar untuk validasi absensi.</p>
     </div>
@@ -55,7 +55,7 @@
                 <x-icon name="map-pin" class="w-5 h-5" />
             </span>
             <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada lokasi terdaftar</p>
-            <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Tambahkan area geofence pertama Anda.</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Tambahkan area Geofencing pertama Anda.</p>
         </div>
     @endforelse
 </section>

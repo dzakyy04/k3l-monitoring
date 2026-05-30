@@ -70,7 +70,7 @@
         <div class="mt-4 grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-5">
             <div class="space-y-4">
                 <div>
-                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Lokasi Geofence</label>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Lokasi Geofencing</label>
                     <select name="lokasi_id" id="lokasiSelect" required
                             class="mt-1 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring">
                         <option value="">— Pilih lokasi resmi —</option>
@@ -108,7 +108,7 @@
     {{-- Lokasi pekerjaan --}}
     <article class="surface-card p-5 lg:p-6">
         <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Lokasi Pekerjaan</h3>
-        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Detail spesifik di mana pekerjaan dilakukan dalam area geofence.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Detail spesifik di mana pekerjaan dilakukan dalam area Geofencing.</p>
 
         <input type="text" name="lokasi" id="lokasiKerja" value="{{ old('lokasi') }}"
                placeholder="Contoh: Area panel listrik lantai 2"
@@ -265,7 +265,7 @@ function pointInPolygon(lat, lng, polygon) {
 function drawSelectedLokasi() {
     const lokasi = selectedLokasi();
     if (polygonLayer) map.removeLayer(polygonLayer);
-    if (!lokasi) { validateGeofence(); return; }
+    if (!lokasi) { validateGeofencing(); return; }
     if (lokasi.polygon && lokasi.polygon.length >= 3) {
         const latlngs = lokasi.polygon.map(p => [p[0], p[1]]);
         polygonLayer = L.polygon(latlngs, { color: '#0284C7', fillColor: '#7DD3FC', fillOpacity: 0.2 }).addTo(map).bindPopup(lokasi.name);
@@ -274,10 +274,10 @@ function drawSelectedLokasi() {
         polygonLayer = L.circle([lokasi.lat, lokasi.lng], { radius: lokasi.radius, color: '#0284C7', fillColor: '#7DD3FC', fillOpacity: 0.2 }).addTo(map);
         map.setView([lokasi.lat, lokasi.lng], 16);
     }
-    validateGeofence();
+    validateGeofencing();
 }
 
-function validateGeofence() {
+function validateGeofencing() {
     const lokasi = selectedLokasi();
     btnSubmit.disabled = true;
     if (!lokasi) { setStatus('warning', 'Pilih lokasi geofencing terlebih dahulu.'); return; }
@@ -310,7 +310,7 @@ function getGps() {
             if (userMarker) map.removeLayer(userMarker);
             userMarker = L.marker([userLat, userLng]).addTo(map).bindPopup('Lokasi Anda');
             map.setView([userLat, userLng], 16);
-            validateGeofence();
+            validateGeofencing();
             // Reverse geocode untuk caption foto
             fetchReverseGeocode(userLat, userLng);
         },

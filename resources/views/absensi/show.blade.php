@@ -40,7 +40,7 @@
         @endif
         <div class="p-5 space-y-4">
             <div>
-                <p class="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">Lokasi Geofence</p>
+                <p class="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">Lokasi Geofencing</p>
                 <p class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $absensi->lokasiData->nama_lokasi ?? '—' }}</p>
             </div>
             <div>
@@ -67,7 +67,7 @@
     {{-- Map card --}}
     <article class="surface-card p-5">
         <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Peta Lokasi</h3>
-        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Titik absensi dan area geofence terdaftar.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Titik absensi dan area Geofencing terdaftar.</p>
 
         <div id="map" class="mt-4 min-h-[360px] rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-800"></div>
 
@@ -108,9 +108,9 @@ const map = L.map('map').setView(center, 16);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
 
 if (polygon && polygon.length >= 3) {
-    L.polygon(polygon.map(p => [p[0], p[1]]), { color: '#0284C7', fillColor: '#7DD3FC', fillOpacity: 0.2 }).addTo(map).bindPopup('Area Geofence');
+    L.polygon(polygon.map(p => [p[0], p[1]]), { color: '#0284C7', fillColor: '#7DD3FC', fillOpacity: 0.2 }).addTo(map).bindPopup('Area Geofencing');
 } else if (fenceLat && fenceLng) {
-    L.circle([fenceLat, fenceLng], { radius: radius, color: '#0284C7', fillColor: '#7DD3FC', fillOpacity: 0.2 }).addTo(map).bindPopup('Area Geofence');
+    L.circle([fenceLat, fenceLng], { radius: radius, color: '#0284C7', fillColor: '#7DD3FC', fillOpacity: 0.2 }).addTo(map).bindPopup('Area Geofencing');
 }
 
 if (lat && lng) {

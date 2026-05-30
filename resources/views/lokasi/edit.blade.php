@@ -1,4 +1,4 @@
-@php $pageTitle = 'Edit Lokasi'; $pageSubtitle = 'Update polygon area geofence'; @endphp
+@php $pageTitle = 'Edit Lokasi'; $pageSubtitle = 'Update polygon area Geofencing'; @endphp
 @extends('layouts.app-supervisor')
 
 @push('styles')
@@ -10,7 +10,7 @@
 
 <section class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
     <div>
-        <p class="eyebrow">Update Geofence</p>
+        <p class="eyebrow">Update Geofencing</p>
         <h1 class="mt-1.5 text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-tight">Edit Lokasi</h1>
         <p class="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Sesuaikan polygon area {{ $lokasi->nama_lokasi }}.</p>
     </div>
@@ -57,20 +57,27 @@
     </article>
 
     <article class="surface-card p-5 lg:p-6">
-        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Peta Geofence</h3>
+        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Peta Geofencing</h3>
 
         <div id="map" class="mt-4 w-full rounded-2xl border border-slate-200 dark:border-white/10" style="height:420px; z-index:1;"></div>
 
-        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-                <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Latitude (Pusat)</label>
-                <input type="text" name="latitude" id="latitude" value="{{ old('latitude', $lokasi->latitude) }}" readonly
-                       class="mt-1 w-full px-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 rounded-xl font-mono-data text-slate-700 dark:text-slate-300">
-            </div>
-            <div>
-                <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Longitude (Pusat)</label>
-                <input type="text" name="longitude" id="longitude" value="{{ old('longitude', $lokasi->longitude) }}" readonly
-                       class="mt-1 w-full px-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 rounded-xl font-mono-data text-slate-700 dark:text-slate-300">
+        <div id="coordinateWrapper" class="hidden">
+            <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Latitude (Pusat)</label>
+                    <input type="text" name="latitude" id="latitude" value="{{ old('latitude', $lokasi->latitude) }}" readonly
+                           class="mt-1 w-full px-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 rounded-xl font-mono-data text-slate-700 dark:text-slate-300">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Longitude (Pusat)</label>
+                    <input type="text" name="longitude" id="longitude" value="{{ old('longitude', $lokasi->longitude) }}" readonly
+                           class="mt-1 w-full px-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 rounded-xl font-mono-data text-slate-700 dark:text-slate-300">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Radius (Meter)</label>
+                    <input type="number" name="radius" id="radiusInput" value="{{ old('radius', $lokasi->radius) }}" min="1"
+                           class="mt-1 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring">
+                </div>
             </div>
         </div>
 
@@ -78,6 +85,9 @@
 
         <div id="polygonInfo" class="hidden mt-4">
             <x-alert type="success">Polygon aktif dengan <strong id="pointCount">0</strong> titik.</x-alert>
+        </div>
+        <div id="markerInfo" class="hidden mt-4">
+            <x-alert type="info">Titik pusat aktif. Silakan tentukan radius pada kolom di atas.</x-alert>
         </div>
     </article>
 
@@ -107,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const map = L.map('map').setView([centerLat, centerLng], 15);
     let searchMarker;
+    let markerCircle;
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
 
@@ -116,13 +127,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const drawControl = new L.Control.Draw({
         draw: {
             polygon: { allowIntersection: false, shapeOptions: { color: '#0284C7', fillColor: '#7DD3FC', fillOpacity: 0.3 } },
-            polyline: false, circle: false, rectangle: false, marker: false, circlemarker: false
+            marker: true,
+            polyline: false, circle: false, rectangle: false, circlemarker: false
         },
         edit: { featureGroup: drawnItems, remove: true }
     });
     map.addControl(drawControl);
 
     function setPolygonData(latlngs) {
+        if (markerCircle) map.removeLayer(markerCircle);
         const polygon = latlngs.map(ll => [ll.lat !== undefined ? ll.lat : ll[0], ll.lng !== undefined ? ll.lng : ll[1]]);
         document.getElementById('polygonInput').value = JSON.stringify(polygon);
         let latSum = 0, lngSum = 0;
@@ -130,15 +143,40 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('latitude').value = (latSum / polygon.length).toFixed(7);
         document.getElementById('longitude').value = (lngSum / polygon.length).toFixed(7);
         document.getElementById('polygonInfo').classList.remove('hidden');
+        document.getElementById('markerInfo').classList.add('hidden');
+        document.getElementById('coordinateWrapper').classList.add('hidden');
         document.getElementById('pointCount').textContent = polygon.length;
     }
 
+    function drawMarkerCircle(latlng) {
+        if (markerCircle) map.removeLayer(markerCircle);
+        const radius = parseFloat(document.getElementById('radiusInput').value) || 100;
+        markerCircle = L.circle(latlng, { radius: radius, color: '#0284C7', fillColor: '#7DD3FC', fillOpacity: 0.2 }).addTo(map);
+    }
+
+    function setMarkerData(latlng) {
+        document.getElementById('polygonInput').value = '[]';
+        document.getElementById('latitude').value = latlng.lat.toFixed(7);
+        document.getElementById('longitude').value = latlng.lng.toFixed(7);
+        document.getElementById('polygonInfo').classList.add('hidden');
+        document.getElementById('markerInfo').classList.remove('hidden');
+        document.getElementById('coordinateWrapper').classList.remove('hidden');
+        drawMarkerCircle(latlng);
+    }
+
+    document.getElementById('radiusInput').addEventListener('input', function() {
+        if (markerCircle) markerCircle.setRadius(parseFloat(this.value) || 0);
+    });
+
     function clearPolygon() {
         drawnItems.clearLayers();
+        if (markerCircle) map.removeLayer(markerCircle);
         document.getElementById('polygonInput').value = '';
         document.getElementById('latitude').value = '';
         document.getElementById('longitude').value = '';
         document.getElementById('polygonInfo').classList.add('hidden');
+        document.getElementById('markerInfo').classList.add('hidden');
+        document.getElementById('coordinateWrapper').classList.add('hidden');
     }
 
     function loadPolygonOnMap(coords) {
@@ -150,8 +188,20 @@ document.addEventListener('DOMContentLoaded', function() {
         setPolygonData(latlngs);
     }
 
-    map.on(L.Draw.Event.CREATED, e => { drawnItems.clearLayers(); drawnItems.addLayer(e.layer); setPolygonData(e.layer.getLatLngs()[0]); });
-    map.on(L.Draw.Event.EDITED, e => { e.layers.eachLayer(layer => setPolygonData(layer.getLatLngs()[0])); });
+    map.on(L.Draw.Event.CREATED, e => { 
+        drawnItems.clearLayers(); 
+        drawnItems.addLayer(e.layer); 
+        if (e.layerType === 'polygon') setPolygonData(e.layer.getLatLngs()[0]); 
+        else if (e.layerType === 'marker') setMarkerData(e.layer.getLatLng());
+    });
+    
+    map.on(L.Draw.Event.EDITED, e => { 
+        e.layers.eachLayer(layer => {
+            if (layer instanceof L.Polygon) setPolygonData(layer.getLatLngs()[0]);
+            else if (layer instanceof L.Marker) setMarkerData(layer.getLatLng());
+        }); 
+    });
+    
     map.on(L.Draw.Event.DELETED, () => clearPolygon());
 
     const searchInput = document.getElementById('searchInput');
@@ -281,16 +331,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function goToPoint(item) {
         const lat = parseFloat(item.lat), lng = parseFloat(item.lon);
-        if (searchMarker) map.removeLayer(searchMarker);
-        searchMarker = L.marker([lat, lng]).addTo(map).bindPopup('<b>' + item.display_name.split(',')[0] + '</b>').openPopup();
+        drawnItems.clearLayers();
+        const marker = L.marker([lat, lng]);
+        drawnItems.addLayer(marker);
+        setMarkerData(marker.getLatLng());
         map.setView([lat, lng], 16);
-        searchResults.innerHTML = '<div class="text-xs font-semibold text-sky-700">Peta dipindahkan. Gambar polygon manual via toolbar peta.</div>';
+        searchResults.innerHTML = '<div class="text-xs font-semibold text-sky-700">Peta dipindahkan. Area radius 1 titik aktif.</div>';
     }
 
     btnSearch.addEventListener('click', searchBoundary);
     searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); searchBoundary(); } });
 
-    if (existingPolygon && existingPolygon.length >= 3) loadPolygonOnMap(existingPolygon);
+    if (existingPolygon && existingPolygon.length >= 3) {
+        loadPolygonOnMap(existingPolygon);
+    } else {
+        const marker = L.marker([centerLat, centerLng]);
+        drawnItems.addLayer(marker);
+        setMarkerData(marker.getLatLng());
+    }
     setTimeout(() => map.invalidateSize(), 200);
 });
 </script>
