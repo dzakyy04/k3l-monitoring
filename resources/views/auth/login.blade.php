@@ -108,23 +108,23 @@
         <div class="absolute inset-0 opacity-30 map-grid"></div>
         <div class="relative z-10 p-12 flex flex-col justify-between text-white">
             <div class="flex items-center gap-2 text-sm">
-                <span class="w-2 h-2 rounded-full bg-white dark:bg-slate-900/80"></span>
+                <span class="w-2 h-2 rounded-full bg-white"></span>
                 <span class="opacity-80">Production · Asia/Jakarta</span>
             </div>
             <div class="space-y-6 max-w-md">
-                <h2 class="text-3xl font-extrabold leading-tight">Monitoring K3L untuk operasi yang lebih aman.</h2>
+                <h2 class="text-3xl font-extrabold leading-tight text-white">Monitoring K3L untuk operasi yang lebih aman.</h2>
                 <p class="text-white/80">Geofencing GPS, checklist APD, dan dokumentasi lapangan dalam satu dashboard yang siap audit.</p>
                 <div class="grid grid-cols-3 gap-4">
-                    <div class="rounded-2xl bg-white dark:bg-slate-900/10 backdrop-blur p-4">
-                        <p class="text-2xl font-mono-data font-bold">99%</p>
+                    <div class="rounded-2xl bg-white/10 backdrop-blur p-4">
+                        <p class="text-2xl font-mono-data font-bold text-white">99%</p>
                         <p class="text-xs text-white/70 mt-1">Sync uptime</p>
                     </div>
-                    <div class="rounded-2xl bg-white dark:bg-slate-900/10 backdrop-blur p-4">
-                        <p class="text-2xl font-mono-data font-bold">8</p>
+                    <div class="rounded-2xl bg-white/10 backdrop-blur p-4">
+                        <p class="text-2xl font-mono-data font-bold text-white">8</p>
                         <p class="text-xs text-white/70 mt-1">Item APD</p>
                     </div>
-                    <div class="rounded-2xl bg-white dark:bg-slate-900/10 backdrop-blur p-4">
-                        <p class="text-2xl font-mono-data font-bold">GPS</p>
+                    <div class="rounded-2xl bg-white/10 backdrop-blur p-4">
+                        <p class="text-2xl font-mono-data font-bold text-white">GPS</p>
                         <p class="text-xs text-white/70 mt-1">Realtime</p>
                     </div>
                 </div>
