@@ -1,4 +1,4 @@
-@php $pageTitle = 'Tambah Lokasi'; $pageSubtitle = 'Buat polygon area Geofencing'; @endphp
+@php $pageTitle = 'Tambah Lokasi'; $pageSubtitle = 'Buat polygon area kerja'; @endphp
 @extends('layouts.app-supervisor')
 
 @push('styles')
@@ -10,7 +10,7 @@
 
 <section class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
     <div>
-        <p class="eyebrow">Geofencing Baru</p>
+        <p class="eyebrow">Area Kerja Baru</p>
         <h1 class="mt-1.5 text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-tight">Tambah Lokasi</h1>
         <p class="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Cari wilayah otomatis atau gambar polygon manual di peta.</p>
     </div>
@@ -22,11 +22,9 @@
 </section>
 
 @if($errors->any())
-    <x-alert type="error">
-        <ul class="list-disc list-inside text-sm">
-            @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
-        </ul>
-    </x-alert>
+    @push('scripts')
+    <script>Swal.fire({ icon: 'error', title: 'Oops!', text: @js(implode(', ', $errors->all())), confirmButtonColor: '#0284C7' });</script>
+    @endpush
 @endif
 
 <form action="{{ route('lokasi.store') }}" method="POST" id="lokasiForm" class="space-y-5" data-submit-text="Menyimpan lokasi...">
@@ -57,7 +55,7 @@
     </article>
 
     <article class="surface-card p-5 lg:p-6">
-        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Peta Geofencing</h3>
+        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Peta Area Kerja</h3>
         <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Polygon dapat diisi otomatis dari pencarian atau digambar manual.</p>
 
         <div id="map" class="mt-4 w-full rounded-2xl border border-slate-200 dark:border-white/10" style="height:420px; z-index:1;"></div>
@@ -240,77 +238,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 return `<button type="button" data-idx="${idx}" class="search-result-btn flex items-center gap-2 w-full text-left text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-800/60 px-3 py-2 rounded-lg cursor-pointer focus-ring">${badge}<span class="truncate">${item.display_name}</span></button>`;
             }).join('');
             document.querySelectorAll('.search-result-btn').forEach(btn => {
-                btn.addEventListener('click', async function() {
+                btn.addEventListener('click', function() {
                     const item = results[parseInt(this.dataset.idx)];
-                    searchResults.innerHTML = '<div class="text-xs font-semibold text-slate-500 dark:text-slate-400 dark:text-slate-500">Mengambil batas wilayah...</div>';
-                    if (item.hasPolygon) { applyGeoJson(item.geojson, item.display_name); searchResults.innerHTML = '<div class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Batas wilayah diterapkan.</div>'; }
-                    else if (item.osm_type === 'relation') { const ok = await fetchBoundaryFromOverpass(item.osm_id, item.display_name); if (!ok) goToPoint(item); }
-                    else if (item.osm_type === 'way') { const ok = await fetchWayFromOverpass(item.osm_id, item.display_name); if (!ok) goToPoint(item); }
-                    else goToPoint(item);
+                    if (item.hasPolygon) {
+                        applyGeoJson(item.geojson, item.display_name);
+                        searchResults.innerHTML = '<div class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Batas wilayah diterapkan.</div>';
+                    } else {
+                        goToPoint(item);
+                    }
                 });
             });
         } catch (e) { searchResults.innerHTML = '<div class="text-xs font-semibold text-red-600 dark:text-red-400">Gagal mencari. Periksa koneksi.</div>'; }
-    }
-
-    async function fetchBoundaryFromOverpass(osmId, displayName) {
-        try {
-            const q = `[out:json][timeout:25];relation(${osmId});out geom;`;
-            const r = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-            const result = await r.json();
-            if (!result.elements?.length) return false;
-            const relation = result.elements[0];
-            const outerMembers = relation.members.filter(m => m.role === 'outer' && m.type === 'way');
-            if (!outerMembers.length) return false;
-            const coords = assemblePolygon(outerMembers);
-            if (coords.length < 3) return false;
-            loadPolygonOnMap(coords);
-            const namaInput = document.getElementById('namaLokasi');
-            if (!namaInput.value.trim()) namaInput.value = displayName.split(',')[0];
-            searchResults.innerHTML = '<div class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Batas wilayah diterapkan.</div>';
-            return true;
-        } catch (e) { return false; }
-    }
-
-    async function fetchWayFromOverpass(osmId, displayName) {
-        try {
-            const q = `[out:json][timeout:25];way(${osmId});out geom;`;
-            const r = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-            const result = await r.json();
-            if (!result.elements?.length) return false;
-            const way = result.elements[0];
-            if (!way.geometry || way.geometry.length < 3) return false;
-            const coords = way.geometry.map(p => [p.lat, p.lon]);
-            const f = coords[0], l = coords[coords.length - 1];
-            if (f[0] === l[0] && f[1] === l[1]) coords.pop();
-            loadPolygonOnMap(coords);
-            const namaInput = document.getElementById('namaLokasi');
-            if (!namaInput.value.trim()) namaInput.value = displayName.split(',')[0];
-            searchResults.innerHTML = '<div class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Batas wilayah diterapkan.</div>';
-            return true;
-        } catch (e) { return false; }
-    }
-
-    function assemblePolygon(ways) {
-        let segments = ways.map(w => w.geometry.map(p => [p.lat, p.lon]));
-        if (!segments.length) return [];
-        const result = segments.shift();
-        let max = segments.length * 2;
-        while (segments.length && max > 0) {
-            max--;
-            const last = result[result.length - 1];
-            let found = false;
-            for (let i = 0; i < segments.length; i++) {
-                const seg = segments[i];
-                if (last[0] === seg[0][0] && last[1] === seg[0][1]) { result.push(...seg.slice(1)); segments.splice(i, 1); found = true; break; }
-                if (last[0] === seg[seg.length-1][0] && last[1] === seg[seg.length-1][1]) { result.push(...seg.reverse().slice(1)); segments.splice(i, 1); found = true; break; }
-            }
-            if (!found) result.push(...segments.shift());
-        }
-        if (result.length > 1) {
-            const f = result[0], l = result[result.length - 1];
-            if (f[0] === l[0] && f[1] === l[1]) result.pop();
-        }
-        return result;
     }
 
     function applyGeoJson(geojson, displayName) {

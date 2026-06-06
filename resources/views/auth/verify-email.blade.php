@@ -3,11 +3,6 @@
     <h1 class="mt-2 text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Verifikasi Email</h1>
     <p class="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Klik link verifikasi di email Anda. Bila belum diterima, kirim ulang.</p>
 
-    @if(session('status') === 'verification-link-sent')
-        <div class="mt-4">
-            <x-alert type="success" message="Link verifikasi baru telah dikirim ke email Anda." />
-        </div>
-    @endif
 
     <div class="mt-6 flex items-center justify-between gap-3">
         <form method="POST" action="{{ route('verification.send') }}">

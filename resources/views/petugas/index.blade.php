@@ -68,9 +68,6 @@
         </button>
     </div>
 
-    @if(session('success'))
-        <x-alert type="success" :message="session('success')" />
-    @endif
 
     {{-- Mobile cards --}}
     <div class="space-y-3 lg:hidden">
@@ -97,7 +94,7 @@
                     </button>
                     <form action="{{ route('petugas.destroy', $item) }}" method="POST" class="inline">
                         @csrf @method('DELETE')
-                        <button type="submit" onclick="return confirm('Hapus {{ $item->name }}?')"
+                        <button type="button" data-confirm="Hapus {{ $item->name }}?"
                                 class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 dark:bg-red-500/10 rounded-full cursor-pointer focus-ring">
                             <x-icon name="trash-2" class="w-3.5 h-3.5" />Hapus
                         </button>
@@ -154,7 +151,7 @@
                                     </button>
                                     <form action="{{ route('petugas.destroy', $item) }}" method="POST" class="inline-flex">
                                         @csrf @method('DELETE')
-                                        <button type="submit" onclick="return confirm('Hapus {{ $item->name }}?')"
+                                        <button type="button" data-confirm="Hapus {{ $item->name }}?"
                                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700 dark:bg-slate-800 cursor-pointer focus-ring"
                                                 aria-label="Hapus">
                                             <x-icon name="trash-2" class="w-4 h-4" />

@@ -77,12 +77,6 @@
     {{-- Forms --}}
     <div class="space-y-5 min-w-0">
 
-        @if(session('status') === 'profile-updated')
-            <x-alert type="success" message="Profil berhasil diperbarui." />
-        @endif
-        @if(session('status') === 'password-updated')
-            <x-alert type="success" message="Password berhasil diperbarui." />
-        @endif
 
         {{-- Profile form --}}
         <article class="surface-card overflow-hidden">

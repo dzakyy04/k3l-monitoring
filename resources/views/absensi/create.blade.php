@@ -1,4 +1,4 @@
-@php $pageTitle = 'Input Absensi'; $pageSubtitle = 'Isi form absensi geofencing'; @endphp
+@php $pageTitle = 'Input Absensi'; $pageSubtitle = 'Isi form absensi lokasi'; @endphp
 @extends('layouts.app-petugas')
 
 @push('styles')
@@ -10,7 +10,7 @@
 {{-- Title row --}}
 <section class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
     <div>
-        <p class="eyebrow">Absensi Geofencing</p>
+        <p class="eyebrow">Absensi Lokasi</p>
         <h1 class="mt-1.5 text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-tight">Input Absensi</h1>
         <p class="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Pastikan GPS aktif dan Anda berada di dalam area lokasi kerja.</p>
     </div>
@@ -21,14 +21,10 @@
     </a>
 </section>
 
-@if (session('success'))
-    <x-alert type="success" :message="session('success')" />
-@endif
-@if (session('error'))
-    <x-alert type="error" :message="session('error')" />
-@endif
 @if ($errors->any())
-    <x-alert type="error" message="Ada data yang belum sesuai. Periksa kembali form absensi." />
+    @push('scripts')
+    <script>Swal.fire({ icon: 'error', title: 'Oops!', text: 'Ada data yang belum sesuai. Periksa kembali form absensi.', confirmButtonColor: '#0284C7' });</script>
+    @endpush
 @endif
 
 <form action="{{ route('absensi.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5" data-submit-text="Menyimpan absensi...">
@@ -62,15 +58,15 @@
         </div>
     </article>
 
-    {{-- Geofencing --}}
+    {{-- Validasi Lokasi --}}
     <article class="surface-card p-5 lg:p-6">
-        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Validasi Geofencing</h3>
+        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Validasi Lokasi</h3>
         <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Pilih lokasi resmi, izinkan GPS, lalu pastikan posisi Anda berada di dalam polygon.</p>
 
         <div class="mt-4 grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-5">
             <div class="space-y-4">
                 <div>
-                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Lokasi Geofencing</label>
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Lokasi Penugasan</label>
                     <select name="lokasi_id" id="lokasiSelect" required
                             class="mt-1 w-full px-3 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl focus-ring">
                         <option value="">— Pilih lokasi resmi —</option>
@@ -108,7 +104,7 @@
     {{-- Lokasi pekerjaan --}}
     <article class="surface-card p-5 lg:p-6">
         <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Lokasi Pekerjaan</h3>
-        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Detail spesifik di mana pekerjaan dilakukan dalam area Geofencing.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500">Detail spesifik di mana pekerjaan dilakukan dalam area kerja.</p>
 
         <input type="text" name="lokasi" id="lokasiKerja" value="{{ old('lokasi') }}"
                placeholder="Contoh: Area panel listrik lantai 2"
@@ -280,7 +276,7 @@ function drawSelectedLokasi() {
 function validateGeofencing() {
     const lokasi = selectedLokasi();
     btnSubmit.disabled = true;
-    if (!lokasi) { setStatus('warning', 'Pilih lokasi geofencing terlebih dahulu.'); return; }
+    if (!lokasi) { setStatus('warning', 'Pilih lokasi penugasan terlebih dahulu.'); return; }
     if (!userLat || !userLng) { setStatus('warning', 'Menunggu GPS. Izinkan akses lokasi dan tekan tombol di atas bila perlu.'); return; }
     let inside = false;
     if (lokasi.polygon && lokasi.polygon.length >= 3) {
@@ -289,10 +285,10 @@ function validateGeofencing() {
         inside = map.distance([userLat, userLng], [lokasi.lat, lokasi.lng]) <= lokasi.radius;
     }
     if (inside) {
-        setStatus('success', 'Anda berada di dalam area geofencing. Absensi dapat dilakukan.');
+        setStatus('success', 'Anda berada di dalam area kerja. Absensi dapat dilakukan.');
         btnSubmit.disabled = false;
     } else {
-        setStatus('error', 'Anda berada di luar area geofencing. Pastikan berada di dalam batas wilayah yang ditentukan.');
+        setStatus('error', 'Anda berada di luar area kerja. Pastikan berada di dalam batas wilayah yang ditentukan.');
     }
 }
 

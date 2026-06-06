@@ -32,9 +32,6 @@
     </div>
 </section>
 
-@if(session('success'))
-    <x-alert type="success" :message="session('success')" />
-@endif
 
 {{-- Filter --}}
 <form method="GET" action="{{ route('absensi.index') }}" class="surface-card p-5">
@@ -174,7 +171,7 @@
                                     </a>
                                     <form action="{{ route('absensi.destroy', $item) }}" method="POST" class="inline-flex">
                                         @csrf @method('DELETE')
-                                        <button type="submit" onclick="return confirm('Hapus data absensi ini?')"
+                                        <button type="button" data-confirm="Hapus data absensi ini?"
                                                 class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700 dark:bg-slate-800 cursor-pointer focus-ring"
                                                 aria-label="Hapus">
                                             <x-icon name="trash-2" class="w-4 h-4" />

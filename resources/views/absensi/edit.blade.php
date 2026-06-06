@@ -20,7 +20,9 @@
 </section>
 
 @if($errors->any())
-    <x-alert type="error" message="Ada kesalahan input. Periksa field yang ditandai." />
+    @push('scripts')
+    <script>Swal.fire({ icon: 'error', title: 'Oops!', text: 'Ada kesalahan input. Periksa field yang ditandai.', confirmButtonColor: '#0284C7' });</script>
+    @endpush
 @endif
 
 <form action="{{ route('absensi.update', $absensi) }}" method="POST" enctype="multipart/form-data" class="space-y-5" data-submit-text="Menyimpan perubahan...">

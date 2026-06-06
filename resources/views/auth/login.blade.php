@@ -113,7 +113,7 @@
             </div>
             <div class="space-y-6 max-w-md">
                 <h2 class="text-3xl font-extrabold leading-tight text-white">Monitoring K3L untuk operasi yang lebih aman.</h2>
-                <p class="text-white/80">Geofencing GPS, checklist APD, dan dokumentasi lapangan dalam satu dashboard yang siap audit.</p>
+                <p class="text-white/80">Validasi lokasi GPS, checklist APD, dan dokumentasi lapangan dalam satu dashboard yang siap audit.</p>
                 <div class="grid grid-cols-3 gap-4">
                     <div class="rounded-2xl bg-white/10 backdrop-blur p-4">
                         <p class="text-2xl font-mono-data font-bold text-white">99%</p>

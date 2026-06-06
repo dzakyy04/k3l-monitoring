@@ -75,7 +75,7 @@
             </div>
             <form method="POST" action="{{ route('logout') }}" class="mt-3">
                 @csrf
-                <button type="submit" onclick="return confirm('Yakin ingin logout?')"
+                <button type="button" data-confirm-logout
                     class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[12px] font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-lg hover:border-red-300 hover:text-red-600 dark:hover:text-red-400 dark:text-red-400 cursor-pointer focus-ring transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
                     Logout

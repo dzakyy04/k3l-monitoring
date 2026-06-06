@@ -112,7 +112,7 @@
                         <x-icon name="map-pin" class="w-4 h-4" />
                     </span>
                     <div class="min-w-0 flex-1">
-                        <p class="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">Lokasi Geofencing</p>
+                        <p class="text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase">Lokasi Penugasan</p>
                         <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 mt-0.5">{{ $absensiHariIni->lokasiData->nama_lokasi ?? '—' }}</p>
                         @if($absensiHariIni->lokasi)
                             <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 truncate mt-0.5">{{ $absensiHariIni->lokasi }}</p>

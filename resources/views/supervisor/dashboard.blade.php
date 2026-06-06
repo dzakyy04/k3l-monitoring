@@ -74,7 +74,7 @@
 
     <article class="kpi-card">
         <div class="flex items-start justify-between">
-            <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Lokasi Geofencing</p>
+            <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Lokasi Penugasan</p>
             <a href="{{ route('lokasi.index') }}" class="kpi-arrow" aria-label="Lihat lokasi">
                 <x-icon name="arrow-up-right" class="w-4 h-4" />
             </a>
@@ -114,7 +114,7 @@
                     <x-icon name="map-pin" class="w-5 h-5" />
                 </span>
                 <div class="min-w-0 flex-1">
-                    <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Lokasi Geofencing</p>
+                    <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Area Kerja</p>
                     <p class="text-[11px] text-slate-500 dark:text-slate-400 dark:text-slate-500">Atur polygon area absensi</p>
                 </div>
                 <x-icon name="arrow-right" class="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-brand-600" />

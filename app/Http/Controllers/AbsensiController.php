@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -85,7 +84,7 @@ class AbsensiController extends Controller
         if (!$lokasi->containsPoint((float) $validated['latitude'], (float) $validated['longitude'])) {
             return back()
                 ->withInput()
-                ->with('error', 'Anda berada di luar area geofencing. Pastikan Anda berada di dalam batas wilayah lokasi yang ditentukan.');
+                ->with('error', 'Anda berada di luar area kerja. Pastikan Anda berada di dalam batas wilayah lokasi yang ditentukan.');
         }
 
         $now = now(config('app.timezone'));
@@ -133,7 +132,7 @@ class AbsensiController extends Controller
                 'tanggal_dari' => $now->toDateString(),
                 'tanggal_sampai' => $now->toDateString(),
             ])
-            ->with('success', 'Absensi berhasil disimpan. Lokasi Anda sudah tervalidasi dalam area geofencing.');
+            ->with('success', 'Absensi berhasil disimpan. Lokasi Anda sudah tervalidasi dalam area kerja.');
     }
 
     public function show(Absensi $absensi)
@@ -235,37 +234,36 @@ class AbsensiController extends Controller
         $sheet->setTitle('Laporan Absensi');
 
         // Column letters mapping
-        $columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'];
+        $columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
         // ── Title rows ──
         $sheet->setCellValue('A1', 'Laporan Absensi K3L');
         $sheet->setCellValue('A2', 'Periode: ' . $range['tanggal_dari'] . ' sampai ' . $range['tanggal_sampai']);
-        $sheet->mergeCells('A1:K1');
-        $sheet->mergeCells('A2:K2');
+        $sheet->mergeCells('A1:J1');
+        $sheet->mergeCells('A2:J2');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
         $sheet->getStyle('A2')->getFont()->setSize(11)->setItalic(true);
 
         // ── Header row ──
-        $headers = ['No', 'Nama Petugas', 'Email', 'Tanggal', 'Jam Absen', 'Status', 'Lokasi Geofencing', 'Lokasi Pekerjaan', 'Checklist APD', 'Uraian', 'Foto'];
+        $headers = ['No', 'Nama Petugas', 'Email', 'Tanggal', 'Jam Absen', 'Status', 'Lokasi Penugasan', 'Lokasi Pekerjaan', 'Checklist APD', 'Uraian'];
         $headerRow = 4;
 
         foreach ($headers as $col => $heading) {
             $sheet->setCellValue($columns[$col] . $headerRow, $heading);
         }
 
-        $headerStyle = $sheet->getStyle('A' . $headerRow . ':K' . $headerRow);
+        $headerStyle = $sheet->getStyle('A' . $headerRow . ':J' . $headerRow);
         $headerStyle->getFont()->setBold(true)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FFFFFFFF'));
         $headerStyle->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF0F172A');
         $headerStyle->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
 
         // ── Column widths ──
-        $widths = [6, 22, 28, 14, 12, 12, 22, 22, 30, 35, 20];
+        $widths = [6, 22, 28, 14, 12, 12, 22, 22, 30, 40];
         foreach ($widths as $i => $w) {
             $sheet->getColumnDimension($columns[$i])->setWidth($w);
         }
 
         // ── Data rows ──
-        $imageHeight = 120; // px for each photo
         $currentRow = $headerRow + 1;
 
         foreach ($items as $index => $item) {
@@ -286,28 +284,8 @@ class AbsensiController extends Controller
                 $sheet->setCellValue($columns[$col] . $currentRow, $value);
             }
 
-            // ── Embed photo ──
-            if ($item->foto && Storage::disk('public')->exists($item->foto)) {
-                $photoPath = Storage::disk('public')->path($item->foto);
-
-                $drawing = new Drawing();
-                $drawing->setName('Foto Absensi');
-                $drawing->setDescription('Foto absensi ' . ($item->user->name ?? ''));
-                $drawing->setPath($photoPath);
-                $drawing->setHeight($imageHeight);
-                $drawing->setCoordinates('K' . $currentRow);
-                $drawing->setOffsetX(5);
-                $drawing->setOffsetY(5);
-                $drawing->setWorksheet($sheet);
-
-                // Adjust row height to accommodate the image + padding
-                $sheet->getRowDimension($currentRow)->setRowHeight($imageHeight * 0.75 + 10);
-            } else {
-                $sheet->setCellValue('K' . $currentRow, '-');
-            }
-
             // Vertical alignment for all cells in this row
-            $sheet->getStyle('A' . $currentRow . ':K' . $currentRow)
+            $sheet->getStyle('A' . $currentRow . ':J' . $currentRow)
                 ->getAlignment()
                 ->setVertical(Alignment::VERTICAL_CENTER)
                 ->setWrapText(true);
@@ -317,13 +295,13 @@ class AbsensiController extends Controller
 
         if ($items->isEmpty()) {
             $sheet->setCellValue('A' . $currentRow, 'Tidak ada data absensi pada periode ini.');
-            $sheet->mergeCells('A' . $currentRow . ':K' . $currentRow);
+            $sheet->mergeCells('A' . $currentRow . ':J' . $currentRow);
             $currentRow++;
         }
 
         // ── Borders for entire data range ──
         $lastDataRow = $currentRow - 1;
-        $sheet->getStyle('A' . $headerRow . ':K' . $lastDataRow)
+        $sheet->getStyle('A' . $headerRow . ':J' . $lastDataRow)
             ->getBorders()
             ->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN)

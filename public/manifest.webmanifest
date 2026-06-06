@@ -2,7 +2,7 @@
     "id": "k3l-monitoring",
     "name": "K3L Monitoring",
     "short_name": "K3L",
-    "description": "Sistem monitoring absensi geofencing, dokumentasi APD, dan kegiatan petugas K3L PT PLN.",
+    "description": "Sistem monitoring absensi berbasis lokasi, dokumentasi APD, dan kegiatan petugas K3L PT PLN.",
     "lang": "id-ID",
     "dir": "ltr",
     "start_url": "/dashboard",
@@ -50,7 +50,7 @@
         {
             "name": "Input Absensi",
             "short_name": "Absen",
-            "description": "Buat catatan absensi baru dengan geofencing",
+            "description": "Buat catatan absensi baru dengan validasi lokasi",
             "url": "/absensi/create",
             "icons": [
                 {

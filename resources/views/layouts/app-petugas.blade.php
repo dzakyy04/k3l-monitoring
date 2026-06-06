@@ -163,6 +163,9 @@
 
     @include('layouts.partials.native-feel')
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @include('layouts.partials.sweetalert')
+
     @stack('scripts')
 </body>
 </html>

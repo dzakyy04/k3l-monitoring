@@ -1,11 +1,11 @@
-@php $pageTitle = 'Lokasi'; $pageSubtitle = 'Polygon area Geofencing'; @endphp
+@php $pageTitle = 'Lokasi'; $pageSubtitle = 'Polygon area kerja'; @endphp
 @extends('layouts.app-supervisor')
 
 @section('content')
 
 <section class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
     <div>
-        <p class="eyebrow">Manajemen Geofencing</p>
+        <p class="eyebrow">Manajemen Area Kerja</p>
         <h1 class="mt-1.5 text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-tight">Data Lokasi</h1>
         <p class="text-sm text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">{{ $lokasi->count() }} area terdaftar untuk validasi absensi.</p>
     </div>
@@ -16,9 +16,6 @@
     </a>
 </section>
 
-@if(session('success'))
-    <x-alert type="success" :message="session('success')" />
-@endif
 
 {{-- Cards grid (mobile + tablet) --}}
 <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 lg:hidden">
@@ -42,7 +39,7 @@
                 </a>
                 <form action="{{ route('lokasi.destroy', $item) }}" method="POST" class="inline">
                     @csrf @method('DELETE')
-                    <button type="submit" onclick="return confirm('Hapus lokasi {{ $item->nama_lokasi }}?')"
+                    <button type="button" data-confirm="Hapus lokasi {{ $item->nama_lokasi }}?"
                             class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 dark:bg-red-500/10 rounded-full cursor-pointer focus-ring">
                         <x-icon name="trash-2" class="w-3.5 h-3.5" />Hapus
                     </button>
@@ -55,7 +52,7 @@
                 <x-icon name="map-pin" class="w-5 h-5" />
             </span>
             <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada lokasi terdaftar</p>
-            <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Tambahkan area Geofencing pertama Anda.</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-slate-500 mt-1">Tambahkan area kerja pertama Anda.</p>
         </div>
     @endforelse
 </section>
@@ -100,7 +97,7 @@
                                 </a>
                                 <form action="{{ route('lokasi.destroy', $item) }}" method="POST" class="inline-flex">
                                     @csrf @method('DELETE')
-                                    <button type="submit" onclick="return confirm('Hapus lokasi {{ $item->nama_lokasi }}?')"
+                                    <button type="button" data-confirm="Hapus lokasi {{ $item->nama_lokasi }}?"
                                             class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700 dark:bg-slate-800 cursor-pointer focus-ring"
                                             aria-label="Hapus">
                                         <x-icon name="trash-2" class="w-4 h-4" />

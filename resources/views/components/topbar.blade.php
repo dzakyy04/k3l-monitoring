@@ -306,7 +306,7 @@
                     <div class="py-1 border-t border-slate-100 dark:border-white/5">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" onclick="return confirm('Yakin ingin logout?')"
+                            <button type="button" data-confirm-logout
                                 role="menuitem"
                                 class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 active:bg-red-100 dark:active:bg-red-500/20 cursor-pointer">
                                 <x-icon name="log-out" class="w-[18px] h-[18px]" />
