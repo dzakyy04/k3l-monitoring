@@ -137,7 +137,7 @@ class AbsensiController extends Controller
 
     public function show(Absensi $absensi)
     {
-        if (Auth::user()->role === 'petugas' && $absensi->user_id !== Auth::id()) {
+        if (Auth::user()->role === 'petugas' && (int) $absensi->user_id !== (int) Auth::id()) {
             abort(403);
         }
 
