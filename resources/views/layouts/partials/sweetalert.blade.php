@@ -1,5 +1,10 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Detect dark mode
+    function isDark() {
+        return document.documentElement.classList.contains('dark');
+    }
+
     // Custom SweetAlert defaults matching our theme
     const Toast = Swal.mixin({
         toast: true,
@@ -11,9 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
             toast.onmouseenter = Swal.stopTimer;
             toast.onmouseleave = Swal.resumeTimer;
         },
-        customClass: {
-            popup: 'swal-toast-custom'
-        }
+        background: isDark() ? '#1E293B' : '#fff',
+        color: isDark() ? '#E2E8F0' : '#1E293B',
     });
 
     // Session flash messages
@@ -45,19 +49,28 @@ document.addEventListener('DOMContentLoaded', function() {
         Toast.fire({ icon: 'success', title: 'Link verifikasi baru telah dikirim ke email Anda.' });
     @endif
 
+    // Dark-aware Swal dialog helper
+    function swalDark(options) {
+        const dark = isDark();
+        return Swal.fire(Object.assign({
+            background: dark ? '#1E293B' : '#fff',
+            color: dark ? '#E2E8F0' : '#1E293B',
+        }, options));
+    }
+
     // Confirm delete forms
     document.querySelectorAll('[data-confirm]').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             const message = this.dataset.confirm;
             const form = this.closest('form');
-            Swal.fire({
+            swalDark({
                 title: 'Konfirmasi',
                 text: message,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#DC2626',
-                cancelButtonColor: '#64748B',
+                cancelButtonColor: isDark() ? '#475569' : '#64748B',
                 confirmButtonText: 'Ya, hapus!',
                 cancelButtonText: 'Batal',
                 reverseButtons: true
@@ -74,13 +87,13 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             const form = this.closest('form');
-            Swal.fire({
+            swalDark({
                 title: 'Logout',
                 text: 'Yakin ingin keluar dari akun?',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0284C7',
-                cancelButtonColor: '#64748B',
+                cancelButtonColor: isDark() ? '#475569' : '#64748B',
                 confirmButtonText: 'Ya, logout',
                 cancelButtonText: 'Batal',
                 reverseButtons: true

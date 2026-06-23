@@ -760,3 +760,112 @@ html, body {
     user-select: none;
     touch-action: manipulation;
 }
+
+/* ═══════════════════════════════════════════
+   SWEETALERT2 DARK MODE
+   ═══════════════════════════════════════════ */
+
+/* Popup (modal dialog) */
+.dark .swal2-popup {
+    background: #1E293B;
+    color: #E2E8F0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* Title */
+.dark .swal2-title {
+    color: #F1F5F9;
+}
+
+/* HTML content / text */
+.dark .swal2-html-container {
+    color: #94A3B8;
+}
+
+/* Toast variant */
+.dark .swal2-popup.swal2-toast {
+    background: #1E293B;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.dark .swal2-popup.swal2-toast .swal2-title {
+    color: #E2E8F0;
+}
+
+/* Timer progress bar */
+.dark .swal2-timer-progress-bar {
+    background: rgba(56, 189, 248, 0.35);
+}
+
+/* Close button */
+.dark .swal2-close {
+    color: #64748B;
+}
+.dark .swal2-close:hover {
+    color: #F1F5F9;
+}
+
+/* Icons - adjust colors for dark backgrounds */
+.dark .swal2-icon.swal2-success {
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #10B981;
+}
+.dark .swal2-icon.swal2-success .swal2-success-line-tip,
+.dark .swal2-icon.swal2-success .swal2-success-line-long {
+    background-color: #10B981;
+}
+.dark .swal2-icon.swal2-success .swal2-success-ring {
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.dark .swal2-icon.swal2-error {
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #EF4444;
+}
+.dark .swal2-icon.swal2-error .swal2-x-mark-line-left,
+.dark .swal2-icon.swal2-error .swal2-x-mark-line-right {
+    background-color: #EF4444;
+}
+
+.dark .swal2-icon.swal2-warning {
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #F59E0B;
+}
+
+.dark .swal2-icon.swal2-info {
+    border-color: rgba(56, 189, 248, 0.4);
+    color: #38BDF8;
+}
+
+.dark .swal2-icon.swal2-question {
+    border-color: rgba(148, 163, 184, 0.4);
+    color: #94A3B8;
+}
+
+/* Backdrop overlay */
+.dark .swal2-container {
+    background: rgba(0, 0, 0, 0.55) !important;
+}
+
+/* Input fields within SweetAlert */
+.dark .swal2-input,
+.dark .swal2-textarea,
+.dark .swal2-select {
+    background: #0F172A;
+    border-color: #334155;
+    color: #F1F5F9;
+}
+.dark .swal2-input:focus,
+.dark .swal2-textarea:focus,
+.dark .swal2-select:focus {
+    border-color: #0284C7;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18);
+}
+
+/* Footer */
+.dark .swal2-footer {
+    border-top-color: rgba(255, 255, 255, 0.06);
+    color: #64748B;
+}
