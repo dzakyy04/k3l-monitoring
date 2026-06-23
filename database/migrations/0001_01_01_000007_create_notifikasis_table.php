@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('notifikasis', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();       // recipient
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('absensi_id')->constrained('absensis')->cascadeOnDelete();
             $table->string('judul');
             $table->text('pesan');

@@ -8,30 +8,21 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable('users')) {
-            Schema::create('users', function (Blueprint $table) {
-                $table->id();
-                $table->string('name');
-                $table->string('email')->unique();
-                $table->timestamp('email_verified_at')->nullable();
-                $table->string('password');
-                $table->string('role')->default('petugas');
-                $table->rememberToken();
-                $table->timestamps();
-            });
-        } elseif (! Schema::hasColumn('users', 'role')) {
-            Schema::table('users', function (Blueprint $table) {
-                $table->string('role')->default('petugas')->after('password');
-            });
-        }
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->nullable();
+            $table->string('password');
+            $table->string('email')->nullable()->unique();
+            $table->enum('role', ['supervisor', 'petugas'])->default('petugas');
+            $table->rememberToken();
+            $table->timestamps();
+        });
 
-        if (! Schema::hasTable('password_reset_tokens')) {
-            Schema::create('password_reset_tokens', function (Blueprint $table) {
-                $table->string('email')->primary();
-                $table->string('token');
-                $table->timestamp('created_at')->nullable();
-            });
-        }
+        Schema::create('password_reset_tokens', function (Blueprint $table) {
+            $table->string('email')->primary();
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
+        });
     }
 
     public function down(): void
